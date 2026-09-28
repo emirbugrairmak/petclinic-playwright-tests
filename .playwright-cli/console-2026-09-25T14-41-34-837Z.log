@@ -1,6 +1,0 @@
-[      28ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ http://localhost:4200/polyfills.js:6313
-[      82ms] [LOG] Angular is running in development mode. @ http://localhost:4200/vendor.js:83944
-[    1774ms] [LOG] inside search by last name starting with Franklin @ http://localhost:4200/main.js:1131
-[    1821ms] [LOG] this.owners [object Object] @ http://localhost:4200/main.js:1140
-[    2991ms] [INFO] [webpack-dev-server] Server started: Hot Module Replacement disabled, Live Reloading enabled, Progress disabled, Overlay enabled. @ http://localhost:4200/polyfills.js:6313
-[    3011ms] [LOG] Angular is running in development mode. @ http://localhost:4200/vendor.js:83944
