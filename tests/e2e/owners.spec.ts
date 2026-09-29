@@ -1,88 +1,71 @@
 import { expect, test } from "@playwright/test";
+import { HomePage } from "../../pages/home-page";
+import { OwnersPage } from "../../pages/owners-page";
+import { AddOwnerPage } from "../../pages/add-owner-page";
+import { owners } from "../../test-data/owner-data";
 
 test.describe("Owners tests", () => {
   test("Home page opens correctly", async ({ page }) => {
-    await page.goto("/");
+    const homePage = new HomePage(page)
+
+    await homePage.goto()
     await expect(page).toHaveURL("/petclinic/");
 
-    const welcomeMessage = page.getByRole("heading", {
-      name: "Welcome to Petclinic",
-    });
-    await expect(welcomeMessage).toBeVisible();
+    await expect(homePage.welcomeMessage).toBeVisible();
 
-    const navBar = page.getByRole("navigation");
     await expect(
-      navBar.getByRole("link", { name: "Home", exact: true }),
+      homePage.navBar.homeButton,
     ).toBeVisible();
     await expect(
-      navBar.getByRole("button", { name: "Owners", exact: true }),
+      homePage.navBar.ownersButton,
     ).toBeVisible();
     await expect(
-      navBar.getByRole("button", { name: "Veterinarians", exact: true }),
+      homePage.navBar.veterinariansButton,
     ).toBeVisible();
     await expect(
-      navBar.getByRole("link", { name: "Pet Types", exact: true }),
+      homePage.navBar.petTypesButton,
     ).toBeVisible();
     await expect(
-      navBar.getByRole("link", { name: "Specialties", exact: true }),
+      homePage.navBar.specialtiesButton,
     ).toBeVisible();
   });
 
-  test("An existing owner can be search by their last name", async ({
+  test("Searches for an existing owner by last name", async ({
     page,
   }) => {
-    await page.goto("/");
+    const homePage = new HomePage(page)
+    const ownersPage = new OwnersPage(page)
+    
+    await homePage.goto()
 
-    const navBar = page.getByRole("navigation");
+    await homePage.navBar.clickOwnerSearchButton()
+    
+    await expect(ownersPage.ownersText).toBeVisible();
 
-    const ownersButton = navBar.getByRole("button", { name: "Owners" });
-    await ownersButton.click();
+    const lastName = "Franklin"
+    await ownersPage.searchOwner(lastName)
 
-    const ownerSearchButton = navBar.getByRole("link", {name: "Search",exact: true,});
-    await ownerSearchButton.click();
-    await expect(page.getByRole("heading", { name: "Owners" })).toBeVisible();
-
-    const lastNameInputField = page.locator("#lastName");
-    const findOwnerButton = page.getByRole("button", { name: "Find Owner" });
-    await lastNameInputField.fill("Franklin");
-    await findOwnerButton.click();
-    await expect(
-      page
-        .getByRole("row")
-        .filter({ has: page.getByRole("cell", { name: "Franklin" }) }),
-    ).toBeVisible();
+    await expect(ownersPage.ownerRowByLastName(lastName)).toBeVisible();
   });
 
-  test("A new owner can be create", async ({ page }) => {
-    await page.goto("/owners");
+  test("Creates a new owner successfully", async ({ page }) => {
+    const ownersPage = new OwnersPage(page)
+    const addOwnerPage = new AddOwnerPage(page)
 
-    const addOwnerButton = page.getByRole("button", { name: "Add Owner" });
-    await addOwnerButton.click();
+    await ownersPage.goto()
 
-    const firstNameInputField = page.getByRole("textbox", {
-      name: "First Name",
-    });
-    const lastNameInputField = page.getByRole("textbox", { name: "Last Name" });
-    const addressInputField = page.getByRole("textbox", { name: "Address" });
-    const cityInputField = page.getByRole("textbox", { name: "City" });
-    const telephoneInputField = page.getByRole("textbox", {
-      name: "Telephone",
-    });
+    await ownersPage.openAddOwnerPage()
 
-    await firstNameInputField.fill("Test First Name");
-    await lastNameInputField.fill("Test Last Name");
-    await addressInputField.fill("Test Adress");
-    await cityInputField.fill("Test City");
-    await telephoneInputField.fill("0123456789");
+    const owner = owners.validOwners
 
-    await addOwnerButton.click();
+    await addOwnerPage.addOwner(owner.firstName, owner.lastName, owner.address, owner.city, owner.telephone)
 
-    const ownerRow = page.getByRole("row").filter({has: page.getByRole("cell", {name: "Test First Name Test Last Name",exact: true}),})
+    const ownerRow = ownersPage.ownerRowByFirstNameAndLastName(owner.firstName, owner.lastName)
 
     await expect(ownerRow).toBeVisible()
-    await expect(ownerRow.getByRole('cell', { name: 'Test Adress', exact: true })).toBeVisible();
-    await expect(ownerRow.getByRole('cell', { name: 'Test City', exact: true })).toBeVisible();
-    await expect(ownerRow.getByRole('cell', { name: '0123456789', exact: true })).toBeVisible();
+    await expect(ownerRow).toContainText(owner.address);
+    await expect(ownerRow).toContainText(owner.city);
+    await expect(ownerRow).toContainText(owner.telephone);
 
 
 
