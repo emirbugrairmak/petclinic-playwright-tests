@@ -1,122 +1,77 @@
 import { expect, test } from "@playwright/test";
+import { HomePage } from "../../pages/home-page";
+import { OwnersPage } from "../../pages/owners-page";
+import { OwnerDetailsPage } from "../../pages/owner-details-page";
+import { AddOwnerPage } from "../../pages/add-owner-page";
+import { owners } from "../../test-data/owner-data";
+import { AddPetPage } from "../../pages/add-pet-page";
 
 test.describe("pet tests", () => {
   test("Owner detail page should be visited correctly.", async ({ page }) => {
-    await page.goto("/");
+    const homePage = new HomePage(page)
+    const ownersPage = new OwnersPage(page)
+    const ownerDetailsPage = new OwnerDetailsPage(page)
 
-    const navBar = page.getByRole("navigation");
-    const ownersButton = navBar.getByRole("button", { name: "Owners" });
-    await ownersButton.click();
-    const ownerSearchButton = navBar.getByRole("link", {
-      name: "Search",
-      exact: true,
-    });
-    await ownerSearchButton.click();
+    await homePage.goto()
 
-    const lastNameInputField = page.locator("#lastName");
-    const findOwnerButton = page.getByRole("button", { name: "Find Owner" });
-    await lastNameInputField.fill("Franklin");
-    await findOwnerButton.click();
+    await homePage.navBar.clickOwnerSearchButton()
 
-    const franklinOwner = page
-      .locator("tbody")
-      .getByRole("link", { name: "George Franklin", exact: true });
-    await franklinOwner.click();
+    const owner = owners.validOwners[2]
 
-    const ownerInformationText = page.getByRole("heading", {
-      name: "Owner Information",
-    });
-    await expect(ownerInformationText).toBeVisible();
+    await ownersPage.searchOwner(owner.lastName)
 
-    const ownerInformationTable = page
-      .getByRole("table")
-      .filter({ hasText: "Address" });
-    const ownerNameRow = ownerInformationTable.getByRole("row", {
-      name: "Name",
-    });
-    const nameCell = ownerNameRow.getByRole("cell");
-    await expect(nameCell).toHaveText("George Franklin");
+    await ownersPage.openOwner(owner.firstName, owner.lastName);
+
+    await expect(ownerDetailsPage.ownerInformationText).toBeVisible();
+    await expect(ownerDetailsPage.nameCell).toHaveText(`${owner.firstName} ${owner.lastName}`)
   });
 
-  test("A new pet should be added correctly to the new owner", async ({
+  test("Adds a pet to a newly created owner", async ({
     page,
   }) => {
-    await page.goto("/");
+    const homePage = new HomePage(page)
+    const ownersPage = new OwnersPage(page)
+    const ownerDetailsPage = new OwnerDetailsPage(page)
+    const addOwnerPage = new AddOwnerPage(page)
+    const addPetPage = new AddPetPage(page)
 
-    const navBar = page.getByRole("navigation");
-    const ownersButton = navBar.getByRole("button", { name: "Owners" });
-    await ownersButton.click();
+    await homePage.goto()
 
-    const addNewOwnerButtonOnNavBar = navBar.getByRole("link", {
-      name: "Add New",
-      exact: true,
-    });
-    await addNewOwnerButtonOnNavBar.click();
-    const newOwnerText = page.getByRole("heading", { name: "New Owner" });
-    await expect(newOwnerText).toBeVisible();
+    await homePage.navBar.clickAddNewButton()
 
-    const firstNameInputField = page.getByRole("textbox", {
-      name: "First Name",
-    });
-    const lastNameInputField = page.getByRole("textbox", { name: "Last Name" });
-    const addressInputField = page.getByRole("textbox", { name: "Address" });
-    const cityInputField = page.getByRole("textbox", { name: "City" });
-    const telephoneInputField = page.getByRole("textbox", {
-      name: "Telephone",
-    });
-    const addOwnerButton = page.getByRole("button", { name: "Add Owner" });
+    await expect(addOwnerPage.newOwnerText).toBeVisible();
 
-    
-    const ownerLastName = "Petflowtrial";
+    const owner = owners.validOwners[1]
 
-    await firstNameInputField.fill("new");
-    await lastNameInputField.fill(ownerLastName);
-    await addressInputField.fill("new");
-    await cityInputField.fill("new");
-    await telephoneInputField.fill("1234567893");
+    await addOwnerPage.addOwner(owner.firstName, owner.lastName, owner.address, owner.city, owner.telephone)
 
-    await addOwnerButton.click();
+    // owners sayfasına geliyor
 
-    const newOwner = page
-      .locator("tbody")
-      .getByRole("link", { name: `new ${ownerLastName}`, exact: true });
-    await newOwner.click();
+    await ownersPage.openOwner(owner.firstName, owner.lastName)
 
-    const addNewPetButton = page.getByRole('button', { name: 'Add New Pet' })
-    await addNewPetButton.click()
+    // detail sayfasına geldik
+
+    await ownerDetailsPage.openAddPetPage()
+
+    // add pet page sayfasına geldik
 
     const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-    const petName = `Buddy-${uniqueId}`;
 
-    const petNameInputField = page.getByRole('textbox', { name: 'Name' })
-    await petNameInputField.fill(petName)
+    const pet = {
+      name: `Buddy-${uniqueId}`,
+      birthDate: "2020-09-16",
+      type: "bird",
+    };
 
-    const calendarIcon = page.getByRole('button', { name: 'Open calendar' })
-    await calendarIcon.click()
+    await addPetPage.addPet(pet.name, pet.birthDate, pet.type)
 
-    const sep16Button = page.getByRole('button', { name: '/09/16' })
-    await sep16Button.click()
+    // owner details sayfasına geri dönüyor
 
-    const typeDropdown = page.getByRole('combobox', {name: "Type"})
-    await typeDropdown.selectOption('bird')
+    const createdPet = ownerDetailsPage.petDetails(pet.name);
 
-    const savePetButton = page.getByRole('button', { name: 'Save Pet' })
-    await savePetButton.click()
-
-    //
-
-    const petsAndVisitsTable = page
-      .getByRole("table")
-      .filter({ hasText: "Birth Date" });
-
-    const createdPet = petsAndVisitsTable.locator("app-pet-list").filter({has: page.getByText(petName, { exact: true }),});
-
-    const petNameOnTable = createdPet.getByText(petName, {exact: true})
-    await expect(petNameOnTable).toBeVisible()
-    const petBirthDate = createdPet.getByText('2026-09-16')
-    await expect(petBirthDate).toBeVisible()
-    const petType = createdPet.getByText('bird', {exact: true})
-    await expect(petType).toBeVisible()
+    await expect(createdPet).toBeVisible()
+    await expect(createdPet).toContainText(pet.birthDate);
+    await expect(createdPet).toContainText(pet.type);
 
 
   });

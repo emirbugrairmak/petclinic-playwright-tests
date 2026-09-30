@@ -5,7 +5,7 @@ export class OwnersPage {
   readonly ownersText: Locator;
   private readonly lastNameInputField: Locator;
   private readonly findOwnerButton: Locator;
-  private readonly addOwnerButton: Locator
+  private readonly addOwnerButton: Locator;
   private readonly ownersTable: Locator;
 
   constructor(page: Page) {
@@ -13,7 +13,7 @@ export class OwnersPage {
     this.ownersText = page.getByRole("heading", { name: "Owners" });
     this.lastNameInputField = page.locator("#lastName");
     this.findOwnerButton = page.getByRole("button", { name: "Find Owner" });
-    this.addOwnerButton = page.getByRole("button", { name: "Add Owner" })
+    this.addOwnerButton = page.getByRole("button", { name: "Add Owner" });
     this.ownersTable = page.getByRole("table");
   }
 
@@ -28,21 +28,29 @@ export class OwnersPage {
       .filter({ has: this.page.getByRole("link", { name: lastName }) });
   }
 
-  async goto(){
-    await this.page.goto("/owners")
+  ownerLinkByLastName(lastName: string): Locator {
+    return this.ownerRowByLastName(lastName).getByRole("link");
   }
 
-  async openAddOwnerPage(){
-    await this.addOwnerButton.click()
+  async goto() {
+    await this.page.goto("/owners");
   }
 
-  ownerRowByFirstNameAndLastName(firstName: string, lastName: string): Locator{
+  async openAddOwnerPage() {
+    await this.addOwnerButton.click();
+  }
+
+  ownerRowByFirstNameAndLastName(firstName: string, lastName: string): Locator {
     return this.ownersTable.getByRole("row").filter({
       has: this.page.getByRole("link", {
         name: `${firstName} ${lastName}`,
         exact: true,
       }),
-    })
+    });
+  }
+
+  async openOwner(firstName: string, lastName: string){
+    await this.ownerRowByFirstNameAndLastName(firstName, lastName).getByRole("link").click();
   }
 
 }

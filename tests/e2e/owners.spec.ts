@@ -56,7 +56,7 @@ test.describe("Owners tests", () => {
 
     await ownersPage.openAddOwnerPage()
 
-    const owner = owners.validOwners
+    const owner = owners.validOwners[0]
 
     await addOwnerPage.addOwner(owner.firstName, owner.lastName, owner.address, owner.city, owner.telephone)
 

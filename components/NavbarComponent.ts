@@ -9,6 +9,7 @@ export class NavbarComponent {
   readonly petTypesButton: Locator
   readonly specialtiesButton: Locator
   private readonly ownerSearchButton: Locator
+  private readonly addNewOwnerButton: Locator
 
   constructor(page: Page) {
     this.page = page;
@@ -19,6 +20,7 @@ export class NavbarComponent {
     this.petTypesButton = this.navBar.getByRole("link", { name: "Pet Types", exact: true })
     this.specialtiesButton = this.navBar.getByRole("link", { name: "Specialties", exact: true })
     this.ownerSearchButton = this.navBar.getByRole("link", {name: "Search",exact: true,})   
+    this.addNewOwnerButton = this.navBar.getByRole("link", {name: "Add New",exact: true,})
   }
 
 
@@ -27,7 +29,10 @@ export class NavbarComponent {
     await this.ownerSearchButton.click()
   }
 
-  
+  async clickAddNewButton(){
+    await this.ownersButton.click()
+    await this.addNewOwnerButton.click()
+  }
 
   
 }
