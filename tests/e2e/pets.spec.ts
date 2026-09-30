@@ -1,57 +1,47 @@
 import { expect, test } from "@playwright/test";
-import { HomePage } from "../../pages/home-page";
-import { OwnersPage } from "../../pages/owners-page";
-import { OwnerDetailsPage } from "../../pages/owner-details-page";
-import { AddOwnerPage } from "../../pages/add-owner-page";
 import { owners } from "../../test-data/owner-data";
-import { AddPetPage } from "../../pages/add-pet-page";
+import { PageManager } from "../../pages/page-manager";
 
 test.describe("pet tests", () => {
   test("Owner detail page should be visited correctly.", async ({ page }) => {
-    const homePage = new HomePage(page)
-    const ownersPage = new OwnersPage(page)
-    const ownerDetailsPage = new OwnerDetailsPage(page)
+    const pm = new PageManager(page)
 
-    await homePage.goto()
+    await pm.homePage.goto()
 
-    await homePage.navBar.clickOwnerSearchButton()
+    await pm.navBar.clickOwnerSearchButton()
 
     const owner = owners.validOwners[2]
 
-    await ownersPage.searchOwner(owner.lastName)
+    await pm.ownersPage.searchOwner(owner.lastName)
 
-    await ownersPage.openOwner(owner.firstName, owner.lastName);
+    await pm.ownersPage.openOwner(owner.firstName, owner.lastName);
 
-    await expect(ownerDetailsPage.ownerInformationText).toBeVisible();
-    await expect(ownerDetailsPage.nameCell).toHaveText(`${owner.firstName} ${owner.lastName}`)
+    await expect(pm.ownerDetailsPage.ownerInformationText).toBeVisible();
+    await expect(pm.ownerDetailsPage.nameCell).toHaveText(`${owner.firstName} ${owner.lastName}`)
   });
 
   test("Adds a pet to a newly created owner", async ({
     page,
   }) => {
-    const homePage = new HomePage(page)
-    const ownersPage = new OwnersPage(page)
-    const ownerDetailsPage = new OwnerDetailsPage(page)
-    const addOwnerPage = new AddOwnerPage(page)
-    const addPetPage = new AddPetPage(page)
+    const pm = new PageManager(page)
 
-    await homePage.goto()
+    await pm.homePage.goto()
 
-    await homePage.navBar.clickAddNewButton()
+    await pm.navBar.clickAddNewButton()
 
-    await expect(addOwnerPage.newOwnerText).toBeVisible();
+    await expect(pm.addOwnerPage.newOwnerText).toBeVisible();
 
     const owner = owners.validOwners[1]
 
-    await addOwnerPage.addOwner(owner.firstName, owner.lastName, owner.address, owner.city, owner.telephone)
+    await pm.addOwnerPage.addOwner(owner.firstName, owner.lastName, owner.address, owner.city, owner.telephone)
 
     // owners sayfasına geliyor
 
-    await ownersPage.openOwner(owner.firstName, owner.lastName)
+    await pm.ownersPage.openOwner(owner.firstName, owner.lastName)
 
     // detail sayfasına geldik
 
-    await ownerDetailsPage.openAddPetPage()
+    await pm.ownerDetailsPage.openAddPetPage()
 
     // add pet page sayfasına geldik
 
@@ -63,11 +53,11 @@ test.describe("pet tests", () => {
       type: "bird",
     };
 
-    await addPetPage.addPet(pet.name, pet.birthDate, pet.type)
+    await pm.addPetPage.addPet(pet.name, pet.birthDate, pet.type)
 
     // owner details sayfasına geri dönüyor
 
-    const createdPet = ownerDetailsPage.petDetails(pet.name);
+    const createdPet = pm.ownerDetailsPage.petDetails(pet.name);
 
     await expect(createdPet).toBeVisible()
     await expect(createdPet).toContainText(pet.birthDate);
