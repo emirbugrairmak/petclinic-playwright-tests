@@ -1,5 +1,5 @@
 import { expect, test } from "@playwright/test";
-import { owners } from "../../test-data/owner-data";
+import { createOwnerData, existingOwners } from "../../test-data/owner-data";
 import { PageManager } from "../../pages/page-manager";
 
 test.describe("Owners tests", () => {
@@ -39,10 +39,11 @@ test.describe("Owners tests", () => {
     
     await expect(pm.ownersPage.ownersText).toBeVisible();
 
-    const lastName = "Franklin"
-    await pm.ownersPage.searchOwner(lastName)
+    const owner = existingOwners.georgeFranklin
 
-    await expect(pm.ownersPage.ownerRowByLastName(lastName)).toBeVisible();
+    await pm.ownersPage.searchOwner(owner.lastName)
+
+    await expect(pm.ownersPage.ownerRowByLastName(owner.lastName)).toBeVisible();
   });
 
   test("Creates a new owner successfully", async ({ page }) => {
@@ -52,7 +53,7 @@ test.describe("Owners tests", () => {
 
     await pm.ownersPage.openAddOwnerPage()
 
-    const owner = owners.validOwners[0]
+    const owner = createOwnerData()
 
     await pm.addOwnerPage.addOwner(owner.firstName, owner.lastName, owner.address, owner.city, owner.telephone)
 

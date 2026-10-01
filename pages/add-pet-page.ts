@@ -10,7 +10,7 @@ export class AddPetPage {
   constructor(page: Page) {
     this.page = page;
     this.petNameInputField = page.getByRole('textbox', { name: 'Name' })
-    this.birthDateInputField = page.getByRole('textbox', { name: 'Birth Date' })
+    this.birthDateInputField = page.locator('input[name="birthDate"]')
     this.typeDropdown = page.getByRole('combobox', {name: "Type"})
     this.savePetButton = page.getByRole('button', { name: 'Save Pet' })
   }

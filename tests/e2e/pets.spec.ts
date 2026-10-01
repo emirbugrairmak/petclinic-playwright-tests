@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
-import { owners } from "../../test-data/owner-data";
+import { createOwnerData, existingOwners } from "../../test-data/owner-data";
 import { PageManager } from "../../pages/page-manager";
+import { createPetData } from "../../test-data/pet-data";
 
 test.describe("pet tests", () => {
   test("Owner detail page should be visited correctly.", async ({ page }) => {
@@ -10,7 +11,7 @@ test.describe("pet tests", () => {
 
     await pm.navBar.clickOwnerSearchButton()
 
-    const owner = owners.validOwners[2]
+    const owner = existingOwners.georgeFranklin
 
     await pm.ownersPage.searchOwner(owner.lastName)
 
@@ -31,7 +32,7 @@ test.describe("pet tests", () => {
 
     await expect(pm.addOwnerPage.newOwnerText).toBeVisible();
 
-    const owner = owners.validOwners[1]
+    const owner = createOwnerData()
 
     await pm.addOwnerPage.addOwner(owner.firstName, owner.lastName, owner.address, owner.city, owner.telephone)
 
@@ -45,13 +46,7 @@ test.describe("pet tests", () => {
 
     // add pet page sayfasına geldik
 
-    const uniqueId = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
-
-    const pet = {
-      name: `Buddy-${uniqueId}`,
-      birthDate: "2020-09-16",
-      type: "bird",
-    };
+    const pet = createPetData()
 
     await pm.addPetPage.addPet(pet.name, pet.birthDate, pet.type)
 
