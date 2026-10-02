@@ -5,7 +5,13 @@ export class OwnerDetailsPage {
   readonly ownerInformationText: Locator;
   readonly ownerInformationTable: Locator;
   private readonly ownerNameRow: Locator;
+  private readonly ownerAddressRow: Locator
+  private readonly ownerCityRow: Locator;
+  private readonly ownerTelephoneRow: Locator;
   readonly nameCell: Locator;
+  readonly addressCell: Locator;
+  readonly cityCell: Locator;
+  readonly telephoneCell: Locator;
   readonly addNewPetButton: Locator
   readonly petsAndVisitsTable: Locator
 
@@ -20,7 +26,13 @@ export class OwnerDetailsPage {
     this.ownerNameRow = this.ownerInformationTable.getByRole("row", {
       name: "Name",
     });
+    this.ownerAddressRow = this.ownerInformationTable.getByRole("row", {name: "Address"})
+    this.ownerCityRow = this.ownerInformationTable.getByRole("row", {name: "City"})
+    this.ownerTelephoneRow = this.ownerInformationTable.getByRole("row", {name: "Telephone"})
     this.nameCell = this.ownerNameRow.getByRole("cell");
+    this.addressCell = this.ownerAddressRow.getByRole('cell')
+    this.cityCell = this.ownerCityRow.getByRole("cell");
+    this.telephoneCell = this.ownerTelephoneRow.getByRole("cell");
     this.addNewPetButton = page.getByRole('button', { name: 'Add New Pet' });
     this.petsAndVisitsTable = page.getByRole("table").filter({ hasText: "Birth Date" });
 

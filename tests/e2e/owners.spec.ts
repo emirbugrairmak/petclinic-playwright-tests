@@ -55,7 +55,7 @@ test.describe("Owners tests", () => {
 
     const owner = createOwnerData()
 
-    await pm.addOwnerPage.addOwner(owner.firstName, owner.lastName, owner.address, owner.city, owner.telephone)
+    await pm.addOwnerPage.addOwner(owner)
 
     const ownerRow = pm.ownersPage.ownerRowByFirstNameAndLastName(owner.firstName, owner.lastName)
 
@@ -67,6 +67,54 @@ test.describe("Owners tests", () => {
 
 
   });
-});
 
+  test('Displays API-created owner correctly in UI', async ({ page, request }) => {
+    const pm = new PageManager(page)
+    const owner = createOwnerData();
+    let ownerId: number | undefined;
+
+    try{
+
+      const createOwnerResponse = await request.post(
+      `${process.env.API_URL}/owners`,
+      {
+        data: {
+          firstName: owner.firstName,
+          lastName: owner.lastName,
+          address: owner.address,
+          city: owner.city,
+          telephone: owner.telephone,
+        },
+      },
+    );
+
+      const createOwnerBody = await createOwnerResponse.json();
+      ownerId = createOwnerBody.id
+      expect(createOwnerResponse.status()).toBe(201);
+
+      await pm.ownersPage.goto()
+
+      await pm.ownersPage.searchOwner(owner.lastName)
+
+      await pm.ownersPage.openOwner(owner.firstName, owner.lastName)
+
+      await expect(pm.ownerDetailsPage.nameCell).toHaveText(`${owner.firstName} ${owner.lastName}`)
+      await expect(pm.ownerDetailsPage.addressCell).toHaveText(owner.address)
+      await expect(pm.ownerDetailsPage.telephoneCell).toHaveText(owner.telephone)
+      await expect(pm.ownerDetailsPage.cityCell).toHaveText(owner.city,);
+
+    }finally{
+      if(ownerId !== undefined){
+        const deleteOwnerResponse = await request.delete(
+        `${process.env.API_URL}/owners/${ownerId}`,
+      );
+      expect.soft(deleteOwnerResponse.status()).toBe(204);
+      }
+    }
+
+
+  });
+
+
+});
 

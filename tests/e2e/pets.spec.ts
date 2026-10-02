@@ -34,7 +34,7 @@ test.describe("pet tests", () => {
 
     const owner = createOwnerData()
 
-    await pm.addOwnerPage.addOwner(owner.firstName, owner.lastName, owner.address, owner.city, owner.telephone)
+    await pm.addOwnerPage.addOwner(owner)
 
     // owners sayfasına geliyor
 

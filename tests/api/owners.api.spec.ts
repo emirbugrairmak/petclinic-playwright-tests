@@ -50,16 +50,14 @@ test("owner CRUD API flow", async ({ request }) => {
     });
 
     const updatedOwner = {
-        ...owner,
-        city: "Updated Test City",
+      ...owner,
+      city: "Updated Test City",
     };
 
     const updateOwnerResponse = await request.put(
       `${process.env.API_URL}/owners/${ownerId}`,
       {
-        data: {
-          updatedOwner,
-        },
+        data: updatedOwner,
       },
     );
 
@@ -74,13 +72,15 @@ test("owner CRUD API flow", async ({ request }) => {
     expect(getUpdatedOwnerResponse.status()).toBe(200);
 
     expect(getUpdatedOwnerBody).toMatchObject({
-        ...updatedOwner,
-        id: ownerId,
+      ...updatedOwner,
+      id: ownerId,
     });
   } finally {
     if (ownerId !== undefined) {
-      const deleteOwnerResponse = await request.delete(`${process.env.API_URL}/owners/${ownerId}`);
-      expect.soft(deleteOwnerResponse.status()).toBe(204)
+      const deleteOwnerResponse = await request.delete(
+        `${process.env.API_URL}/owners/${ownerId}`,
+      );
+      expect.soft(deleteOwnerResponse.status()).toBe(204);
     }
   }
 });

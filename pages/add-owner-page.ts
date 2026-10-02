@@ -1,4 +1,5 @@
 import { Locator, Page } from '@playwright/test';
+import type { OwnerData } from "../test-data/owner-data";
 
 export class AddOwnerPage {
   private readonly page: Page;
@@ -21,12 +22,12 @@ export class AddOwnerPage {
     this.newOwnerText = page.getByRole("heading", { name: "New Owner" })
   }
 
-  async addOwner(firstName: string, lastName: string, address: string, city: string, telephone: string){
-    await this.firstNameInputField.fill(firstName);
-    await this.lastNameInputField.fill(lastName);
-    await this.addressInputField.fill(address);
-    await this.cityInputField.fill(city);
-    await this.telephoneInputField.fill(telephone);
+  async addOwner(owner: OwnerData){
+    await this.firstNameInputField.fill(owner.firstName);
+    await this.lastNameInputField.fill(owner.lastName);
+    await this.addressInputField.fill(owner.address);
+    await this.cityInputField.fill(owner.city);
+    await this.telephoneInputField.fill(owner.telephone);
     await this.addOwnerButton.click()
   }
 
