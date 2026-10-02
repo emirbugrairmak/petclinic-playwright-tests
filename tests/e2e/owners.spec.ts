@@ -1,6 +1,7 @@
 import { expect, test } from "@playwright/test";
 import { createOwnerData, existingOwners } from "../../test-data/owner-data";
 import { PageManager } from "../../pages/page-manager";
+import { OwnerApi } from "../../api/owner-api";
 
 test.describe("Owners tests", () => {
   test("Home page opens correctly", async ({ page }) => {
@@ -72,21 +73,11 @@ test.describe("Owners tests", () => {
     const pm = new PageManager(page)
     const owner = createOwnerData();
     let ownerId: number | undefined;
+    const ownerApi = new OwnerApi(request)
 
     try{
 
-      const createOwnerResponse = await request.post(
-      `${process.env.API_URL}/owners`,
-      {
-        data: {
-          firstName: owner.firstName,
-          lastName: owner.lastName,
-          address: owner.address,
-          city: owner.city,
-          telephone: owner.telephone,
-        },
-      },
-    );
+      const createOwnerResponse = await ownerApi.createOwner(owner)
 
       const createOwnerBody = await createOwnerResponse.json();
       ownerId = createOwnerBody.id
@@ -105,10 +96,8 @@ test.describe("Owners tests", () => {
 
     }finally{
       if(ownerId !== undefined){
-        const deleteOwnerResponse = await request.delete(
-        `${process.env.API_URL}/owners/${ownerId}`,
-      );
-      expect.soft(deleteOwnerResponse.status()).toBe(204);
+        const deleteOwnerResponse = await ownerApi.deleteOwner(ownerId)
+        expect.soft(deleteOwnerResponse.status()).toBe(204);
       }
     }
 

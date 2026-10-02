@@ -1,27 +1,20 @@
 import { expect, test } from "@playwright/test";
 import { createOwnerData } from "../../test-data/owner-data";
+import { OwnerApi } from "../../api/owner-api";
 
 test("owner CRUD API flow", async ({ request }) => {
   const owner = createOwnerData();
-
   let ownerId: number | undefined;
+  const ownerApi = new OwnerApi(request)
 
-  try {
-    const createOwnerResponse = await request.post(
-      `${process.env.API_URL}/owners`,
-      {
-        data: {
-          firstName: owner.firstName,
-          lastName: owner.lastName,
-          address: owner.address,
-          city: owner.city,
-          telephone: owner.telephone,
-        },
-      },
-    );
+  try{
+    const createOwnerResponse = await ownerApi.createOwner(owner)
 
     const createOwnerBody = await createOwnerResponse.json();
     ownerId = createOwnerBody.id;
+    if (typeof ownerId !== "number") {
+      throw new Error("Created owner ID is not a number");
+    }
     expect(createOwnerBody.id).toEqual(expect.any(Number));
     expect(createOwnerResponse.status()).toBe(201);
     expect(createOwnerBody).toMatchObject({
@@ -32,9 +25,7 @@ test("owner CRUD API flow", async ({ request }) => {
       telephone: owner.telephone,
     });
 
-    const getOwnerResponse = await request.get(
-      `${process.env.API_URL}/owners/${ownerId}`,
-    );
+    const getOwnerResponse = await ownerApi.getOwner(ownerId)
 
     const getOwnerBody = await getOwnerResponse.json();
 
@@ -54,18 +45,11 @@ test("owner CRUD API flow", async ({ request }) => {
       city: "Updated Test City",
     };
 
-    const updateOwnerResponse = await request.put(
-      `${process.env.API_URL}/owners/${ownerId}`,
-      {
-        data: updatedOwner,
-      },
-    );
+    const updateOwnerResponse = await ownerApi.updateOwner(ownerId, updatedOwner)
 
     expect([200, 204]).toContain(updateOwnerResponse.status());
 
-    const getUpdatedOwnerResponse = await request.get(
-      `${process.env.API_URL}/owners/${ownerId}`,
-    );
+    const getUpdatedOwnerResponse = await ownerApi.getOwner(ownerId)
 
     const getUpdatedOwnerBody = await getUpdatedOwnerResponse.json();
 
@@ -77,9 +61,7 @@ test("owner CRUD API flow", async ({ request }) => {
     });
   } finally {
     if (ownerId !== undefined) {
-      const deleteOwnerResponse = await request.delete(
-        `${process.env.API_URL}/owners/${ownerId}`,
-      );
+      const deleteOwnerResponse = await ownerApi.deleteOwner(ownerId)
       expect.soft(deleteOwnerResponse.status()).toBe(204);
     }
   }
