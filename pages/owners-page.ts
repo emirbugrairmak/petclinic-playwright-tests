@@ -49,8 +49,38 @@ export class OwnersPage {
     });
   }
 
-  async openOwner(firstName: string, lastName: string){
-    await this.ownerRowByFirstNameAndLastName(firstName, lastName).getByRole("link").click();
+  async openOwner(firstName: string, lastName: string) {
+    await this.ownerRowByFirstNameAndLastName(firstName, lastName)
+      .getByRole("link")
+      .click();
   }
 
+  ownerAddressCell(
+    address: string,
+    firstName: string,
+    lastName: string,
+  ): Locator {
+    return this.ownerRowByFirstNameAndLastName(firstName, lastName).getByRole(
+      "cell",
+      { name: address },
+    );
+  }
+
+  ownerCityCell(city: string, firstName: string, lastName: string): Locator {
+    return this.ownerRowByFirstNameAndLastName(firstName, lastName).getByRole(
+      "cell",
+      { name: city },
+    );
+  }
+
+  ownerTelephoneCell(
+    telephone: string,
+    firstName: string,
+    lastName: string,
+  ): Locator {
+    return this.ownerRowByFirstNameAndLastName(firstName, lastName).getByRole(
+      "cell",
+      { name: telephone },
+    );
+  }
 }
