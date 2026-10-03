@@ -1,11 +1,9 @@
-import { expect, test } from "@playwright/test";
 import { createOwnerData } from "../../test-data/owner-data";
-import { OwnerApi } from "../../api/owner-api";
+import { test, expect } from "../../fixtures/test-fixtures"
 
-test("owner CRUD API flow", async ({ request }) => {
+test("owner CRUD API flow", async ({ ownerApi }) => {
   const owner = createOwnerData();
   let ownerId: number | undefined;
-  const ownerApi = new OwnerApi(request)
 
   try{
     const createOwnerResponse = await ownerApi.createOwner(owner)

@@ -1,12 +1,9 @@
-import { expect, test } from "@playwright/test";
 import { createOwnerData, existingOwners } from "../../test-data/owner-data";
-import { PageManager } from "../../pages/page-manager";
 import { createPetData } from "../../test-data/pet-data";
+import { test, expect } from "../../fixtures/test-fixtures";
 
 test.describe("pet tests", () => {
-  test("Owner detail page should be visited correctly.", async ({ page }) => {
-    const pm = new PageManager(page)
-
+  test("Owner detail page should be visited correctly.", async ({ pm }) => {
     await pm.homePage.goto()
 
     await pm.navBar.clickOwnerSearchButton()
@@ -22,10 +19,8 @@ test.describe("pet tests", () => {
   });
 
   test("Adds a pet to a newly created owner", async ({
-    page,
+    pm,
   }) => {
-    const pm = new PageManager(page)
-
     await pm.homePage.goto()
 
     await pm.navBar.clickAddNewButton()
