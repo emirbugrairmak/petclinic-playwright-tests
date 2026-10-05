@@ -18,7 +18,7 @@ export class AddPetPage {
   async addPet(petName: string, birthDate: string, option: string){
     await this.petNameInputField.fill(petName)
     await this.birthDateInputField.fill(birthDate)
-    await this.typeDropdown.selectOption(option)
+    await this.typeDropdown.selectOption({ label: option })
     await this.savePetButton.click()
   }
 

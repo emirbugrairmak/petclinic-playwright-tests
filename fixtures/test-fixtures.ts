@@ -40,6 +40,8 @@ export const test = base.extend<FixtureTypes>({
     } finally {
       const deleteOwnerResponse = await ownerApi.deleteOwner(ownerId);
       expect.soft(deleteOwnerResponse.status()).toBe(204);
+      const getOwnerResponse = await ownerApi.getOwner(ownerId)
+      expect(getOwnerResponse.status()).toBe(404);
     }
 
 

@@ -1,4 +1,4 @@
-import { createOwnerData, existingOwners } from "../../test-data/owner-data";
+import { existingOwners } from "../../test-data/owner-data";
 import { createPetData } from "../../test-data/pet-data";
 import { test, expect } from "../../fixtures/test-fixtures";
 
@@ -19,19 +19,12 @@ test.describe("pet tests", {tag: ["@e2e", "@smoke"]},() => {
   });
 
   test("Adds a pet to a newly created owner", {tag: ["@pet"]},async ({
-    pm,
+    pm, owner, page, request
   }) => {
-    await pm.homePage.goto()
-
-    await pm.navBar.clickAddNewButton()
-
-    await expect(pm.addOwnerPage.newOwnerText).toBeVisible();
-
-    const owner = createOwnerData()
-
-    await pm.addOwnerPage.addOwner(owner)
-
+    
     // owners sayfasına geliyor
+
+    await pm.ownersPage.goto()
 
     await pm.ownersPage.openOwner(owner.firstName, owner.lastName)
 
@@ -42,8 +35,22 @@ test.describe("pet tests", {tag: ["@e2e", "@smoke"]},() => {
     // add pet page sayfasına geldik
 
     const pet = createPetData()
+    let petId: number | undefined
 
+    try{
+      const responsePromise = page.waitForResponse(
+      response =>
+        response.url().includes(`/api/owners/${owner.id}/pets`) &&
+        response.request().method() === 'POST'
+    );
+    
     await pm.addPetPage.addPet(pet.name, pet.birthDate, pet.type)
+    
+    const response = await responsePromise;
+    const responseBody = await response.json();
+    petId = responseBody.id
+    expect(petId).toEqual(expect.any(Number))
+    expect(response.status()).toBe(201)
 
     // owner details sayfasına geri dönüyor
 
@@ -52,7 +59,22 @@ test.describe("pet tests", {tag: ["@e2e", "@smoke"]},() => {
     await expect(createdPet).toBeVisible()
     await expect(createdPet).toContainText(pet.birthDate);
     await expect(createdPet).toContainText(pet.type);
+    } finally{
+      if (petId !== undefined) {
+        const petDeleteResponse = await request.delete(`${process.env.API_URL}/pets/${petId}`)
+        expect.soft(petDeleteResponse.status()).toBe(204)
+        const getPetResponse = await request.get(`${process.env.API_URL}/pets/${petId}`)
+        expect(getPetResponse.status()).toBe(404); 
+      }
+
+      
+    }
+
+    
+
+    
 
 
   });
 });
+

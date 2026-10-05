@@ -12,6 +12,6 @@ export function createPetData(): PetData{
     return {
         name: `Buddy ${uniqueId}`,
         birthDate: "2020-09-16",
-        type: "bird"
+        type: "hamster"
     }
 }
