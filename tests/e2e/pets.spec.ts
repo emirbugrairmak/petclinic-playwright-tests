@@ -2,8 +2,8 @@ import { createOwnerData, existingOwners } from "../../test-data/owner-data";
 import { createPetData } from "../../test-data/pet-data";
 import { test, expect } from "../../fixtures/test-fixtures";
 
-test.describe("pet tests", () => {
-  test("Owner detail page should be visited correctly.", async ({ pm }) => {
+test.describe("pet tests", {tag: ["@e2e", "@smoke"]},() => {
+  test("Owner detail page should be visited correctly.", {tag: ["@owner"]},async ({ pm }) => {
     await pm.homePage.goto()
 
     await pm.navBar.clickOwnerSearchButton()
@@ -18,7 +18,7 @@ test.describe("pet tests", () => {
     await expect(pm.ownerDetailsPage.nameCell).toHaveText(`${owner.firstName} ${owner.lastName}`)
   });
 
-  test("Adds a pet to a newly created owner", async ({
+  test("Adds a pet to a newly created owner", {tag: ["@pet"]},async ({
     pm,
   }) => {
     await pm.homePage.goto()

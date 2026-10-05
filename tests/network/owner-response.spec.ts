@@ -2,7 +2,7 @@ import { expect, test } from "../../fixtures/test-fixtures";
 import { createOwnerData } from "../../test-data/owner-data";
 
 
-test('Analyse wait for response', async ({ pm, page, ownerApi }) => {
+test('Analyse wait for response', {tag: ["@network"]} ,async ({ pm, page, ownerApi }) => {
 
     const owner = createOwnerData()
     let ownerId: number | undefined

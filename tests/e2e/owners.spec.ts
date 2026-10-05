@@ -1,8 +1,8 @@
 import { createOwnerData, existingOwners } from "../../test-data/owner-data";
 import { test, expect } from "../../fixtures/test-fixtures";
 
-test.describe("Owners tests", () => {
-  test("Home page opens correctly", async ({ pm, page }) => {
+test.describe("Owners tests", {tag: ["@e2e"]}, () => {
+  test("Home page opens correctly", {tag: ["@smoke", "@home"]}, async ({ pm, page }) => {
     await pm.homePage.goto();
     await expect(page).toHaveURL("/petclinic/");
 
@@ -15,7 +15,7 @@ test.describe("Owners tests", () => {
     await expect(pm.navBar.specialtiesButton).toBeVisible();
   });
 
-  test("Searches for an existing owner by last name", async ({ pm }) => {
+  test("Searches for an existing owner by last name", {tag: ["@smoke", "@owner"]}, async ({ pm }) => {
     await pm.homePage.goto();
 
     await pm.navBar.clickOwnerSearchButton();
@@ -31,7 +31,7 @@ test.describe("Owners tests", () => {
     ).toBeVisible();
   });
 
-  test("Creates a new owner successfully", async ({ pm }) => {
+  test("Creates a new owner successfully", {tag: ["@smoke", "@owner"]}, async ({ pm }) => {
     await pm.ownersPage.goto();
 
     await pm.ownersPage.openAddOwnerPage();
@@ -51,7 +51,7 @@ test.describe("Owners tests", () => {
     await expect(ownerRow).toContainText(owner.telephone);
   });
 
-  test("Displays API-created owner correctly in UI", async ({
+  test("Displays API-created owner correctly in UI", {tag: ["@api", "@owner"]}, async ({
     pm,
     owner,
   }) => {

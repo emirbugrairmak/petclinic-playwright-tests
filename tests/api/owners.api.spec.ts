@@ -1,7 +1,7 @@
 import { createOwnerData } from "../../test-data/owner-data";
 import { test, expect } from "../../fixtures/test-fixtures"
 
-test("owner CRUD API flow", async ({ ownerApi }) => {
+test("owner CRUD API flow",{tag: ["@api", "@owner", "@smoke"]} , async ({ ownerApi }) => {
   const owner = createOwnerData();
   let ownerId: number | undefined;
 
