@@ -32,16 +32,25 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
+      testIgnore: '**/mobile/**'
     },
 
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
+      testIgnore: '**/mobile/**'
     },
 
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
+      testIgnore: '**/mobile/**'
+    },
+
+    {
+      name: 'mobile-chromium',
+      testMatch: '**/mobile/**/*.spec.ts',
+      use: { ...devices['Pixel 7'] },
     },
 
   ],

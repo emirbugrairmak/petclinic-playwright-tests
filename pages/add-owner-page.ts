@@ -10,6 +10,7 @@ export class AddOwnerPage {
   private readonly telephoneInputField: Locator
   private readonly addOwnerButton: Locator
   readonly newOwnerText: Locator
+  readonly form: Locator
 
   constructor(page: Page) {
     this.page = page;
@@ -20,6 +21,7 @@ export class AddOwnerPage {
     this.telephoneInputField = page.getByRole("textbox", {name: "Telephone",})
     this.addOwnerButton = page.getByRole("button", { name: "Add Owner" }) 
     this.newOwnerText = page.getByRole("heading", { name: "New Owner" })
+    this.form = page.locator('form').filter({has: page.getByRole('button', {name: 'Add Owner',exact: true,}),}); 
   }
 
   async addOwner(owner: OwnerData){

@@ -3,10 +3,10 @@ import { Locator, Page } from "@playwright/test";
 export class OwnersPage {
   private readonly page: Page;
   readonly ownersText: Locator;
-  private readonly lastNameInputField: Locator;
-  private readonly findOwnerButton: Locator;
+  readonly lastNameInputField: Locator;
+  readonly findOwnerButton: Locator;
   private readonly addOwnerButton: Locator;
-  private readonly ownersTable: Locator;
+  readonly ownersTable: Locator;
 
   constructor(page: Page) {
     this.page = page;
