@@ -25,7 +25,7 @@ export default defineConfig({
         cwd: './frontend',
         command:
           'docker run --rm --name petclinic-frontend -p 4200:4200 -v "$PWD:/app" -w /app -e NG_CLI_ANALYTICS=false node:18 npm start -- --host 0.0.0.0 --port 4200',
-        url: 'http://localhost:4200/petclinic/',
+        url: 'http://localhost:4200/',
         timeout: 120_000,
         reuseExistingServer: false,
         gracefulShutdown: { signal: 'SIGTERM', timeout: 10_000 },
