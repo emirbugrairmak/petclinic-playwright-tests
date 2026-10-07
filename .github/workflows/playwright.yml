@@ -1,0 +1,70 @@
+name: Playwright Tests
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+jobs:
+  test:
+    timeout-minutes: 60
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: http://localhost:4200
+      API_URL: http://localhost:9966/petclinic/api
+    steps:
+    - uses: actions/checkout@v6
+    - uses: actions/setup-node@v6
+      with:
+        node-version: lts/*
+    - name: Install dependencies
+      run: npm ci
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+    - name: Start backend
+      run: |
+        docker run -d \
+          --name petclinic-backend \
+          -p 9966:9966 \
+          springcommunity/spring-petclinic-rest
+    - name: Wait for backend
+      run: |
+        for attempt in {1..60}; do
+          if curl --fail --silent --max-time 3 \
+            http://localhost:9966/petclinic/api/owners > /dev/null; then
+            echo "Backend hazır."
+            exit 0
+          fi
+
+          echo "Backend bekleniyor... Deneme: $attempt"
+          sleep 2
+        done
+
+        echo "Backend zamanında hazır olmadı."
+        docker logs petclinic-backend
+        exit 1
+    - name: Clone frontend
+      run: |
+        git clone --depth 1 \
+          https://github.com/bondar-artem/petclinic-angular.git \
+          frontend
+    - name: Install frontend dependencies
+      run: |
+        docker run --rm \
+          -v "$PWD/frontend:/app" \
+          -w /app \
+          node:18 \
+          npm ci
+    - name: Run Playwright tests
+      run: npm run test -- --grep-invert @visual
+    - uses: actions/upload-artifact@v4
+      if: ${{ !cancelled() }}
+      with:
+        name: playwright-report
+        path: |
+          playwright-report/
+          test-results/
+        retention-days: 30
+    - name: Stop application containers
+      if: always()
+      run: |
+        docker rm -f petclinic-backend petclinic-frontend

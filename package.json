@@ -18,7 +18,8 @@
     "test:pet" : "playwright test --grep @pet",
     "test:network" : "playwright test --grep @network",
     "test:mock" : "playwright test --grep @mock",
-    "test:interception" : "playwright test --grep @interception"
+    "test:interception" : "playwright test --grep @interception",
+    "test:visual" : "playwright test --grep @visual"
 
   },
   "keywords": [],

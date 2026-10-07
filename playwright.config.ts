@@ -20,6 +20,19 @@ export default defineConfig({
   workers: process.env.CI ? 1 : undefined,
   /* Reporter to use. See https://playwright.dev/docs/test-reporters */
   reporter: 'html',
+  webServer: process.env.CI
+    ? {
+        cwd: './frontend',
+        command:
+          'docker run --rm --name petclinic-frontend -p 4200:4200 -v "$PWD:/app" -w /app -e NG_CLI_ANALYTICS=false node:18 npm start -- --host 0.0.0.0 --port 4200',
+        url: 'http://localhost:4200/petclinic/',
+        timeout: 120_000,
+        reuseExistingServer: false,
+        gracefulShutdown: { signal: 'SIGTERM', timeout: 10_000 },
+        stdout: 'pipe',
+        stderr: 'pipe',
+      }
+    : undefined,
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
     baseURL: process.env.BASE_URL,
