@@ -68,3 +68,104 @@ jobs:
       if: always()
       run: |
         docker rm -f petclinic-backend petclinic-frontend
+
+  visual:
+    name: Visual Tests
+    timeout-minutes: 30
+    runs-on: ubuntu-latest
+    env:
+      BASE_URL: http://localhost:4200
+      API_URL: http://localhost:9966/petclinic/api
+      SKIP_WEBSERVER: 'true'
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v6
+        with:
+          node-version: lts/*
+      - name: Start backend
+        run: |
+          docker run -d \
+            --name petclinic-backend \
+            -p 9966:9966 \
+            springcommunity/spring-petclinic-rest
+      - name: Wait for backend
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent --max-time 3 \
+              http://localhost:9966/petclinic/api/owners > /dev/null; then
+              echo "Backend hazır."
+              exit 0
+            fi
+
+            echo "Backend bekleniyor... Deneme: $attempt"
+            sleep 2
+          done
+
+          echo "Backend zamanında hazır olmadı."
+          docker logs petclinic-backend
+          exit 1
+      - name: Clone frontend
+        run: |
+          git clone --depth 1 \
+            https://github.com/bondar-artem/petclinic-angular.git \
+            frontend
+      - name: Install frontend dependencies
+        run: |
+          docker run --rm \
+            -v "$PWD/frontend:/app" \
+            -w /app \
+            node:18 \
+            npm ci
+      - name: Start frontend
+        run: |
+          docker run -d \
+            --name petclinic-frontend \
+            -p 4200:4200 \
+            -v "$PWD/frontend:/app" \
+            -w /app \
+            -e NG_CLI_ANALYTICS=false \
+            node:18 \
+            npm start -- --host 0.0.0.0 --port 4200
+      - name: Wait for frontend
+        run: |
+          for attempt in {1..60}; do
+            if curl --fail --silent --max-time 3 \
+              http://localhost:4200/ > /dev/null; then
+              echo "Frontend hazır."
+              exit 0
+            fi
+
+            echo "Frontend bekleniyor... Deneme: $attempt"
+            sleep 2
+          done
+
+          echo "Frontend zamanında hazır olmadı."
+          docker logs petclinic-frontend
+          exit 1
+      - name: Run visual tests in Playwright container
+        run: |
+          docker run --rm --init \
+            --platform linux/amd64 \
+            --ipc=host \
+            --network host \
+            -v "$PWD:/app" \
+            -w /app \
+            -e CI=true \
+            -e BASE_URL \
+            -e API_URL \
+            -e SKIP_WEBSERVER \
+            mcr.microsoft.com/playwright:v1.63.0-noble \
+            bash -c 'npm ci && npm run test:visual'
+      - name: Upload visual test artifacts
+        uses: actions/upload-artifact@v4
+        if: ${{ !cancelled() }}
+        with:
+          name: playwright-visual-report
+          path: |
+            playwright-report/
+            test-results/
+          retention-days: 30
+      - name: Stop application containers
+        if: always()
+        run: |
+          docker rm -f petclinic-backend petclinic-frontend
