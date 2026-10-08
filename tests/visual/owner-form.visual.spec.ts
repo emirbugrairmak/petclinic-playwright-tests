@@ -6,6 +6,15 @@ test('Add Owner Form Screenshot Validation', {tag: ["@visual"]}, async ({ page, 
     await pm.navBar.clickAddNewButton()
 
     await expect(pm.addOwnerPage.form).toBeVisible()
+
+    // Geçici deney: visual karşılaştırmanın değişikliği yakaladığını doğrula.
+    await page.addStyleTag({
+        content: `
+            input {
+                background-color: #ff00ff !important;
+            }
+        `
+    });
     
     await expect(pm.addOwnerPage.form).toHaveScreenshot("formscreenshot.png")
 
