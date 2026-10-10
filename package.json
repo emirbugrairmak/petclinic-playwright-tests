@@ -20,7 +20,8 @@
     "test:mock" : "playwright test --grep @mock",
     "test:interception" : "playwright test --grep @interception",
     "test:visual" : "playwright test --grep @visual --project=chromium",
-    "test:visual:update": "npm run test:visual -- --update-snapshots"
+    "test:visual:update": "npm run test:visual -- --update-snapshots",
+    "test:mobile": "playwright test --project=mobile-chromium"
 
   },
   "keywords": [],
