@@ -1,11 +1,11 @@
 import { test, expect } from "../../fixtures/test-fixtures";
 
 
-test('Add Owner Form Screenshot Validation', {tag: ["@visual"]}, async ({ page, pm }) => {
+test('matches the new owner form screenshot', {tag: ["@visual"]}, async ({ pm }) => {
     await pm.homePage.goto()
     await pm.navBar.clickAddNewButton()
 
-    await expect(pm.addOwnerPage.form).toBeVisible()
+    await expect(pm.addOwnerPage.ownerForm).toBeVisible()
 
     // Temporary Change
     // await page.addStyleTag({
@@ -16,6 +16,6 @@ test('Add Owner Form Screenshot Validation', {tag: ["@visual"]}, async ({ page, 
     //     `
     // });
     
-    await expect(pm.addOwnerPage.form).toHaveScreenshot("formscreenshot.png")
+    await expect(pm.addOwnerPage.ownerForm).toHaveScreenshot("formscreenshot.png")
 
 });

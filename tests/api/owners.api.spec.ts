@@ -1,7 +1,7 @@
 import { createOwnerData } from "../../test-data/owner-data";
 import { test, expect } from "../../fixtures/test-fixtures"
 
-test("owner CRUD API flow",{tag: ["@api", "@owner", "@smoke"]} , async ({ ownerApi }) => {
+test("creates, retrieves, updates, and deletes an owner",{tag: ["@api", "@owner", "@smoke"]} , async ({ ownerApi }) => {
   const owner = createOwnerData();
   let ownerId: number | undefined;
 
@@ -13,7 +13,7 @@ test("owner CRUD API flow",{tag: ["@api", "@owner", "@smoke"]} , async ({ ownerA
     if (typeof ownerId !== "number") {
       throw new Error("Created owner ID is not a number");
     }
-    expect(createOwnerBody.id).toEqual(expect.any(Number));
+
     expect(createOwnerResponse.status()).toBe(201);
     expect(createOwnerBody).toMatchObject({
       firstName: owner.firstName,
@@ -43,9 +43,9 @@ test("owner CRUD API flow",{tag: ["@api", "@owner", "@smoke"]} , async ({ ownerA
       city: "Updated Test City",
     };
 
-    const updateOwnerResponse = await ownerApi.updateOwner(ownerId, updatedOwner)
+    const updatedOwnerResponse = await ownerApi.updateOwner(ownerId, updatedOwner)
 
-    expect([200, 204]).toContain(updateOwnerResponse.status());
+    expect(updatedOwnerResponse.status()).toBe(204);
 
     const getUpdatedOwnerResponse = await ownerApi.getOwner(ownerId)
 
@@ -61,6 +61,9 @@ test("owner CRUD API flow",{tag: ["@api", "@owner", "@smoke"]} , async ({ ownerA
     if (ownerId !== undefined) {
       const deleteOwnerResponse = await ownerApi.deleteOwner(ownerId)
       expect.soft(deleteOwnerResponse.status()).toBe(204);
+
+      const getDeletedOwnerResponse = await ownerApi.getOwner(ownerId)
+      expect(getDeletedOwnerResponse.status()).toBe(404)
     }
   }
 });

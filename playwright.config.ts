@@ -5,26 +5,25 @@ import 'dotenv/config';
 // import path from 'path';
 // dotenv.config({ path: path.resolve(__dirname, '.env') });
 
+const frontendNodeImage = process.env.FRONTEND_NODE_IMAGE ?? 'node:18@sha256:c6ae79e38498325db67193d391e6ec1d224d96c693a8a4d943498556716d3783';
+
 /**
  * See https://playwright.dev/docs/test-configuration.
  */
 export default defineConfig({
   testDir: './tests',
-  /* Run tests in files in parallel */
   fullyParallel: true,
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
   retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
   workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
+  reporter: process.env.CI
+    ? [['list'], ['github'], ['html', { open: 'never' }]]
+    : 'html',
   webServer: process.env.CI && process.env.SKIP_WEBSERVER !== 'true'
     ? {
         cwd: './frontend',
         command:
-          'docker run --rm --name petclinic-frontend -p 4200:4200 -v "$PWD:/app" -w /app -e NG_CLI_ANALYTICS=false node:18 npm start -- --host 0.0.0.0 --port 4200',
+          `docker run --rm --name petclinic-frontend -p 4200:4200 -v "$PWD:/app" -w /app -e NG_CLI_ANALYTICS=false ${frontendNodeImage} npm start -- --host 0.0.0.0 --port 4200 --live-reload=false`,
         url: 'http://localhost:4200/',
         timeout: 120_000,
         reuseExistingServer: false,
@@ -33,7 +32,7 @@ export default defineConfig({
         stderr: 'pipe',
       }
     : undefined,
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+
   use: {
     baseURL: process.env.BASE_URL,
     trace: 'retain-on-failure',
@@ -45,19 +44,19 @@ export default defineConfig({
     {
       name: 'chromium',
       use: { ...devices['Desktop Chrome'] },
-      testIgnore: '**/mobile/**'
+      testIgnore: ["**/mobile/**", "**/api/**"]
     },
 
     {
       name: 'firefox',
       use: { ...devices['Desktop Firefox'] },
-      testIgnore: '**/mobile/**'
+      testIgnore: ["**/mobile/**", "**/api/**"]
     },
 
     {
       name: 'webkit',
       use: { ...devices['Desktop Safari'] },
-      testIgnore: '**/mobile/**'
+      testIgnore: ["**/mobile/**", "**/api/**"]
     },
 
     {
@@ -65,6 +64,12 @@ export default defineConfig({
       testMatch: '**/mobile/**/*.spec.ts',
       use: { ...devices['Pixel 7'] },
     },
+
+    {
+      name: 'api',
+      testMatch: "tests/api/**"
+    },
+
 
   ],
 

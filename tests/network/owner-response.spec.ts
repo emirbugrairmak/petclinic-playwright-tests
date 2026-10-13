@@ -2,13 +2,13 @@ import { expect, test } from "../../fixtures/test-fixtures";
 import { createOwnerData } from "../../test-data/owner-data";
 
 
-test('Analyse wait for response', {tag: ["@network"]} ,async ({ pm, page, ownerApi }) => {
+test('captures the owner creation response and displays the owner', {tag: ["@network"]} ,async ({ pm, page, ownerApi }) => {
 
     const owner = createOwnerData()
     let ownerId: number | undefined
     
     await pm.homePage.goto()
-    await pm.homePage.navBar.clickAddNewButton()
+    await pm.navBar.clickAddNewButton()
 
     const responsePromise = page.waitForResponse(
       response =>
@@ -21,8 +21,11 @@ test('Analyse wait for response', {tag: ["@network"]} ,async ({ pm, page, ownerA
         
         const response = await responsePromise;
         const responseBody = await response.json();
-        ownerId = responseBody.id
-        expect(ownerId).toEqual(expect.any(Number));
+        const createdOwnerId: unknown = responseBody.id
+        if (typeof createdOwnerId !== "number") {
+            throw new Error("Created owner ID is not a number")
+        }
+        ownerId = createdOwnerId
 
         expect(response.status()).toBe(201)
         expect(responseBody.firstName).toEqual(owner.firstName)
@@ -32,9 +35,9 @@ test('Analyse wait for response', {tag: ["@network"]} ,async ({ pm, page, ownerA
         expect(responseBody.telephone).toEqual(owner.telephone)
         
         await expect(pm.ownersPage.ownerRowByFirstNameAndLastName(owner.firstName, owner.lastName)).toBeVisible()
-        await expect(pm.ownersPage.ownerAddressCell(owner.address, owner.firstName, owner.lastName)).toBeVisible()
-        await expect(pm.ownersPage.ownerCityCell(owner.city, owner.firstName, owner.lastName)).toBeVisible()
-        await expect(pm.ownersPage.ownerTelephoneCell(owner.telephone, owner.firstName, owner.lastName)).toBeVisible()
+        await expect(pm.ownersPage.addressCellForOwner(owner.firstName, owner.lastName, owner.address)).toBeVisible()
+        await expect(pm.ownersPage.cityCellForOwner(owner.firstName, owner.lastName, owner.city)).toBeVisible()
+        await expect(pm.ownersPage.telephoneCellForOwner(owner.firstName, owner.lastName, owner.telephone)).toBeVisible()
     } finally{
         if (ownerId !== undefined) {
             const deleteOwnerResponse = await ownerApi.deleteOwner(ownerId)
@@ -46,9 +49,6 @@ test('Analyse wait for response', {tag: ["@network"]} ,async ({ pm, page, ownerA
     
 
 });
-
-
-
 
 
 

@@ -4,20 +4,27 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+env:
+  FRONTEND_COMMIT: 6e70caf78572f4a9dc74c8ba2cb119f237e14980
+  BACKEND_IMAGE: springcommunity/spring-petclinic-rest@sha256:d092779e874fd680357763a6f219d97afb419dca13f6a750ccfb8ac63c610986
+  FRONTEND_NODE_IMAGE: node:18@sha256:c6ae79e38498325db67193d391e6ec1d224d96c693a8a4d943498556716d3783
+  PLAYWRIGHT_IMAGE: mcr.microsoft.com/playwright:v1.63.0-noble@sha256:eff16c30e6f3f4af0a03fa4b706120d5e9b0891c344a27d64559aff5900a4a27
 jobs:
   test:
     timeout-minutes: 60
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       BASE_URL: http://localhost:4200
       API_URL: http://localhost:9966/petclinic/api
     steps:
-    - uses: actions/checkout@v6
-    - uses: actions/setup-node@v6
+    - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+    - uses: actions/setup-node@249970729cb0ef3589644e2896645e5dc5ba9c38 # v6
       with:
-        node-version: lts/*
+        node-version: 24.14.1
     - name: Install dependencies
       run: npm ci
+    - name: Typecheck
+      run: npm run typecheck
     - name: Install Playwright Browsers
       run: npx playwright install --with-deps
     - name: Start backend
@@ -25,7 +32,7 @@ jobs:
         docker run -d \
           --name petclinic-backend \
           -p 9966:9966 \
-          springcommunity/spring-petclinic-rest
+          "$BACKEND_IMAGE"
     - name: Wait for backend
       run: |
         for attempt in {1..60}; do
@@ -44,19 +51,20 @@ jobs:
         exit 1
     - name: Clone frontend
       run: |
-        git clone --depth 1 \
-          https://github.com/bondar-artem/petclinic-angular.git \
-          frontend
+        git init frontend
+        git -C frontend remote add origin https://github.com/bondar-artem/petclinic-angular.git
+        git -C frontend fetch --depth 1 origin "$FRONTEND_COMMIT"
+        git -C frontend checkout --detach FETCH_HEAD
     - name: Install frontend dependencies
       run: |
         docker run --rm \
           -v "$PWD/frontend:/app" \
           -w /app \
-          node:18 \
+          "$FRONTEND_NODE_IMAGE" \
           npm ci
     - name: Run Playwright tests
       run: npm run test -- --grep-invert @visual
-    - uses: actions/upload-artifact@v4
+    - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
       if: ${{ !cancelled() }}
       with:
         name: playwright-report
@@ -72,22 +80,19 @@ jobs:
   visual:
     name: Visual Tests
     timeout-minutes: 30
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       BASE_URL: http://localhost:4200
       API_URL: http://localhost:9966/petclinic/api
       SKIP_WEBSERVER: 'true'
     steps:
-      - uses: actions/checkout@v6
-      - uses: actions/setup-node@v6
-        with:
-          node-version: lts/*
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
       - name: Start backend
         run: |
           docker run -d \
             --name petclinic-backend \
             -p 9966:9966 \
-            springcommunity/spring-petclinic-rest
+            "$BACKEND_IMAGE"
       - name: Wait for backend
         run: |
           for attempt in {1..60}; do
@@ -106,15 +111,16 @@ jobs:
           exit 1
       - name: Clone frontend
         run: |
-          git clone --depth 1 \
-            https://github.com/bondar-artem/petclinic-angular.git \
-            frontend
+          git init frontend
+          git -C frontend remote add origin https://github.com/bondar-artem/petclinic-angular.git
+          git -C frontend fetch --depth 1 origin "$FRONTEND_COMMIT"
+          git -C frontend checkout --detach FETCH_HEAD
       - name: Install frontend dependencies
         run: |
           docker run --rm \
             -v "$PWD/frontend:/app" \
             -w /app \
-            node:18 \
+            "$FRONTEND_NODE_IMAGE" \
             npm ci
       - name: Start frontend
         run: |
@@ -124,8 +130,8 @@ jobs:
             -v "$PWD/frontend:/app" \
             -w /app \
             -e NG_CLI_ANALYTICS=false \
-            node:18 \
-            npm start -- --host 0.0.0.0 --port 4200
+            "$FRONTEND_NODE_IMAGE" \
+            npm start -- --host 0.0.0.0 --port 4200 --live-reload=false
       - name: Wait for frontend
         run: |
           for attempt in {1..60}; do
@@ -154,10 +160,10 @@ jobs:
             -e BASE_URL \
             -e API_URL \
             -e SKIP_WEBSERVER \
-            mcr.microsoft.com/playwright:v1.63.0-noble \
-            bash -c 'npm ci && npm run test:visual'
+            "$PLAYWRIGHT_IMAGE" \
+            bash -c 'npm ci && npm run typecheck && npm run test:visual'
       - name: Upload visual test artifacts
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4
         if: ${{ !cancelled() }}
         with:
           name: playwright-visual-report

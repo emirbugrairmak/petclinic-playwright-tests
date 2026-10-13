@@ -33,10 +33,15 @@ Requires Node.js, npm, Git, and Docker. The frontend must be cloned separately. 
 ```bash
 npm ci
 npx playwright install
+FRONTEND_COMMIT=6e70caf78572f4a9dc74c8ba2cb119f237e14980
+BACKEND_IMAGE=springcommunity/spring-petclinic-rest@sha256:d092779e874fd680357763a6f219d97afb419dca13f6a750ccfb8ac63c610986
+FRONTEND_NODE_IMAGE=node:18@sha256:c6ae79e38498325db67193d391e6ec1d224d96c693a8a4d943498556716d3783
 git clone --depth 1 https://github.com/bondar-artem/petclinic-angular.git ../petclinic-angular
-docker run -d --name petclinic-backend -p 9966:9966 springcommunity/spring-petclinic-rest
-docker run --rm -v "$PWD/../petclinic-angular:/app" -w /app node:18 npm ci
-docker run -d --name petclinic-frontend -p 4200:4200 -v "$PWD/../petclinic-angular:/app" -w /app -e NG_CLI_ANALYTICS=false node:18 npm start -- --host 0.0.0.0 --port 4200
+git -C ../petclinic-angular fetch --depth 1 origin "$FRONTEND_COMMIT"
+git -C ../petclinic-angular checkout --detach FETCH_HEAD
+docker run -d --name petclinic-backend -p 9966:9966 "$BACKEND_IMAGE"
+docker run --rm -v "$PWD/../petclinic-angular:/app" -w /app "$FRONTEND_NODE_IMAGE" npm ci
+docker run -d --name petclinic-frontend -p 4200:4200 -v "$PWD/../petclinic-angular:/app" -w /app -e NG_CLI_ANALYTICS=false "$FRONTEND_NODE_IMAGE" npm start -- --host 0.0.0.0 --port 4200 --live-reload=false
 cp .env.example .env
 ```
 
@@ -50,6 +55,7 @@ API_URL=http://localhost:9966/petclinic/api
 | Command | Purpose |
 | --- | --- |
 | `npm test` | All configured projects and tests |
+| `npm run typecheck` | Check TypeScript types without emitting files |
 | `npm run test:smoke` | Smoke tests |
 | `npm run test:e2e` | Tagged UI workflows |
 | `npm run test:api` | API-tagged tests |
@@ -73,6 +79,8 @@ Screenshot rendering depends on the operating system. The committed `formscreens
 - **Visual job:** starts the application independently and compares the Chromium screenshot in the pinned Playwright Linux container.
 
 Both jobs upload their HTML reports and `test-results/` as separate artifacts, including failure traces and visual `expected`, `actual`, and `diff` images when produced.
+
+CI runs `npm run typecheck` before tests. The frontend commit, backend image, frontend Node image, Playwright image, runner OS, Node version, and action revisions are pinned in the workflow. Direct npm dependencies use exact versions in `package.json`; `package-lock.json` locks the full dependency tree. To update the application versions, use `git ls-remote https://github.com/bondar-artem/petclinic-angular.git HEAD` for the frontend commit and `docker buildx imagetools inspect IMAGE:TAG` for an image digest. Update the workflow values and the local commands above; also update the frontend Node image in `playwright.config.ts`. Verify the new application versions with `npm run typecheck` and `npm test` before committing. The screenshot baseline may need review if the frontend or Playwright image changes.
 
 ## Status
 

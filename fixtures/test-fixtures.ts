@@ -4,8 +4,6 @@ import { OwnerApi } from "../api/owner-api";
 import { createOwnerData, OwnerData } from "../test-data/owner-data";
 
 type FixtureTypes = {
-  // Fixture adı: teste verilecek değerin tipi
-  // Örnek: pom fixture'ı bir PageManager nesnesi verir.
   pm: PageManager;
   ownerApi: OwnerApi;
   owner: OwnerData & { id: number };
@@ -43,12 +41,6 @@ export const test = base.extend<FixtureTypes>({
       const getOwnerResponse = await ownerApi.getOwner(ownerId)
       expect(getOwnerResponse.status()).toBe(404);
     }
-
-
-
-
-
-
   },
 });
 

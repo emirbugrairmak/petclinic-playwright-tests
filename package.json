@@ -5,13 +5,14 @@
   "main": "index.js",
   "scripts": {
     "test": "playwright test",
+    "typecheck": "tsc --noEmit",
     "test:report": "playwright show-report",
     "test:chromium": "playwright test --project=chromium",
     "test:headed:chromium" : "playwright test --headed --project=chromium",
     "test:ui" : "playwright test --ui",
     "test:smoke" : "playwright test --grep @smoke",
     "test:smoke:chromium" : "npm run test:smoke -- --project=chromium",
-    "test:api" : "playwright test --grep @api",
+    "test:api" : "playwright test --project=api",
     "test:e2e" : "playwright test --grep @e2e",
     "test:owner" : "playwright test --grep @owner",
     "test:home" : "playwright test --grep @home",
@@ -29,8 +30,9 @@
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "@playwright/test": "^1.63.0",
-    "@types/node": "^26.6.3",
-    "dotenv": "^18.0.5"
+    "@playwright/test": "1.63.0",
+    "@types/node": "26.6.3",
+    "dotenv": "18.0.5",
+    "typescript": "7.0.2"
   }
 }

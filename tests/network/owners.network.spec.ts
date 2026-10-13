@@ -1,14 +1,14 @@
 import { expect, test } from "../../fixtures/test-fixtures";
 import { mockOwners } from "../../test-data/mock-owner-data";
 
-test.describe("Owners network tests", {tag: ["@network"]}, () => {
-  test("TC-N01 displays mocked owners", {tag: ["@mock"]} ,async ({ page, pm }) => {
-    const mockData = mockOwners;
+test.describe("Owner network", {tag: ["@network"]}, () => {
+  test("displays an owner from a mocked response", {tag: ["@mock"]} ,async ({ page, pm }) => {
+    const mockOwner = mockOwners[0];
 
     await page.route("**/api/owners", async (route) => {
       await route.fulfill({
         status: 200,
-        json: mockData,
+        json: mockOwners,
       });
     });
 
@@ -16,15 +16,37 @@ test.describe("Owners network tests", {tag: ["@network"]}, () => {
 
     await expect(
       pm.ownersPage.ownerRowByFirstNameAndLastName(
-        mockData[0].firstName,
-        mockData[0].lastName,
+        mockOwner.firstName,
+        mockOwner.lastName,
+      ),
+    ).toBeVisible();
+    await expect(
+      pm.ownersPage.addressCellForOwner(
+        mockOwner.firstName,
+        mockOwner.lastName,
+        mockOwner.address,
+      ),
+    ).toBeVisible();
+    await expect(
+      pm.ownersPage.cityCellForOwner(
+        mockOwner.firstName,
+        mockOwner.lastName,
+        mockOwner.city,
+      ),
+    ).toBeVisible();
+    await expect(
+      pm.ownersPage.telephoneCellForOwner(
+        mockOwner.firstName,
+        mockOwner.lastName,
+        mockOwner.telephone,
       ),
     ).toBeVisible();
   });
 
-  test("TC-N02 displays an injected owner from modified respons", {tag: ["@interception"]} ,async ({
+  test("displays an owner injected into the API response", {tag: ["@interception"]} ,async ({
     page,
     pm,
+    owner,
   }) => {
     await page.route("**/api/owners", async (route) => {
       const response = await route.fetch();
@@ -44,6 +66,13 @@ test.describe("Owners network tests", {tag: ["@network"]}, () => {
       pm.ownersPage.ownerRowByFirstNameAndLastName(
         mockOwners[0].firstName,
         mockOwners[0].lastName,
+      ),
+    ).toBeVisible();
+
+    await expect(
+      pm.ownersPage.ownerRowByFirstNameAndLastName(
+        owner.firstName,
+        owner.lastName,
       ),
     ).toBeVisible();
   });

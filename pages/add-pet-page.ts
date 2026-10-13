@@ -1,24 +1,27 @@
 import { Locator, Page } from '@playwright/test';
+import type { PetData } from '../test-data/pet-data';
 
 export class AddPetPage {
-  private readonly page: Page;
-  private readonly petNameInputField: Locator
-  private readonly birthDateInputField: Locator
-  private readonly typeDropdown: Locator
+  private readonly petNameInput: Locator
+  private readonly birthDateInput: Locator
+  private readonly petTypeSelect: Locator
   private readonly savePetButton: Locator
 
   constructor(page: Page) {
-    this.page = page;
-    this.petNameInputField = page.getByRole('textbox', { name: 'Name' })
-    this.birthDateInputField = page.locator('input[name="birthDate"]')
-    this.typeDropdown = page.getByRole('combobox', {name: "Type"})
+    this.petNameInput = page.getByRole('textbox', { name: 'Name' })
+    this.birthDateInput = page.locator('input[name="birthDate"]')
+    this.petTypeSelect = page.getByRole('combobox', {name: "Type"})
     this.savePetButton = page.getByRole('button', { name: 'Save Pet' })
   }
 
-  async addPet(petName: string, birthDate: string, option: string){
-    await this.petNameInputField.fill(petName)
-    await this.birthDateInputField.fill(birthDate)
-    await this.typeDropdown.selectOption({ label: option })
+  async waitUntilReady(): Promise<void> {
+    await this.petNameInput.waitFor({ state: 'visible' })
+  }
+
+  async addPet(pet: PetData){
+    await this.petNameInput.fill(pet.name)
+    await this.birthDateInput.fill(pet.birthDate)
+    await this.petTypeSelect.selectOption({ label: pet.type })
     await this.savePetButton.click()
   }
 

@@ -1,24 +1,23 @@
 import { Locator, Page } from "@playwright/test";
-import { expect } from "@playwright/test";
 
 export class OwnerDetailsPage {
   private readonly page: Page;
-  readonly ownerInformationText: Locator;
+  readonly ownerInformationHeading: Locator;
   readonly ownerInformationTable: Locator;
   private readonly ownerNameRow: Locator;
   private readonly ownerAddressRow: Locator;
   private readonly ownerCityRow: Locator;
   private readonly ownerTelephoneRow: Locator;
-  readonly nameCell: Locator;
-  readonly addressCell: Locator;
-  readonly cityCell: Locator;
-  readonly telephoneCell: Locator;
+  readonly ownerNameCell: Locator;
+  readonly ownerAddressCell: Locator;
+  readonly ownerCityCell: Locator;
+  readonly ownerTelephoneCell: Locator;
   readonly addNewPetButton: Locator;
   readonly petsAndVisitsTable: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.ownerInformationText = page.getByRole("heading", {
+    this.ownerInformationHeading = page.getByRole("heading", {
       name: "Owner Information",
     });
     this.ownerInformationTable = page
@@ -36,10 +35,10 @@ export class OwnerDetailsPage {
     this.ownerTelephoneRow = this.ownerInformationTable.getByRole("row", {
       name: "Telephone",
     });
-    this.nameCell = this.ownerNameRow.getByRole("cell");
-    this.addressCell = this.ownerAddressRow.getByRole("cell");
-    this.cityCell = this.ownerCityRow.getByRole("cell");
-    this.telephoneCell = this.ownerTelephoneRow.getByRole("cell");
+    this.ownerNameCell = this.ownerNameRow.getByRole("cell");
+    this.ownerAddressCell = this.ownerAddressRow.getByRole("cell");
+    this.ownerCityCell = this.ownerCityRow.getByRole("cell");
+    this.ownerTelephoneCell = this.ownerTelephoneRow.getByRole("cell");
     this.addNewPetButton = page.getByRole("button", { name: "Add New Pet" });
     this.petsAndVisitsTable = page
       .getByRole("table")
@@ -48,13 +47,9 @@ export class OwnerDetailsPage {
 
   async openAddPetPage() {
     await this.addNewPetButton.click();
-
-    await expect(
-      this.page.getByRole("textbox", { name: "Name", exact: true }),
-    ).toBeVisible();
   }
 
-  petDetails(petName: string): Locator {
+  petDetailsByName(petName: string): Locator {
     return this.petsAndVisitsTable
       .locator("app-pet-list")
       .filter({ has: this.page.getByText(petName, { exact: true }) });

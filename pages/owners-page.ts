@@ -2,34 +2,44 @@ import { Locator, Page } from "@playwright/test";
 
 export class OwnersPage {
   private readonly page: Page;
-  readonly ownersText: Locator;
-  readonly lastNameInputField: Locator;
+  readonly ownersHeading: Locator;
+  readonly lastNameInput: Locator;
   readonly findOwnerButton: Locator;
   private readonly addOwnerButton: Locator;
   readonly ownersTable: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.ownersText = page.getByRole("heading", { name: "Owners" });
-    this.lastNameInputField = page.locator("#lastName");
+    this.ownersHeading = page.getByRole("heading", { name: "Owners" });
+    this.lastNameInput = page.locator("#lastName");
     this.findOwnerButton = page.getByRole("button", { name: "Find Owner" });
     this.addOwnerButton = page.getByRole("button", { name: "Add Owner" });
     this.ownersTable = page.getByRole("table");
   }
 
-  async searchOwner(lastName: string) {
-    await this.lastNameInputField.fill(lastName);
-    await this.findOwnerButton.click();
-  }
+  async searchOwner(lastName: string): Promise<void> {
+    if (!lastName.trim()) {
+      throw new Error("searchOwner requires a non-empty last name");
+    }
 
-  ownerRowByLastName(lastName: string): Locator {
-    return this.ownersTable
-      .getByRole("row")
-      .filter({ has: this.page.getByRole("link", { name: lastName }) });
-  }
+    await this.lastNameInput.fill(lastName);
 
-  ownerLinkByLastName(lastName: string): Locator {
-    return this.ownerRowByLastName(lastName).getByRole("link");
+    const [response] = await Promise.all([
+      this.page.waitForResponse((response) => {
+        const url = new URL(response.url());
+
+        return (
+          response.request().method() === "GET" &&
+          url.pathname.endsWith("/api/owners") &&
+          url.searchParams.get("lastName") === lastName
+        );
+      }),
+      this.findOwnerButton.click(),
+    ]);
+
+    if (!response.ok()) {
+      throw new Error(`Owner search failed: HTTP ${response.status()}`);
+    }
   }
 
   async goto() {
@@ -55,32 +65,32 @@ export class OwnersPage {
       .click();
   }
 
-  ownerAddressCell(
+  addressCellForOwner(
+    firstName: string,
+    lastName: string,
     address: string,
-    firstName: string,
-    lastName: string,
   ): Locator {
     return this.ownerRowByFirstNameAndLastName(firstName, lastName).getByRole(
       "cell",
-      { name: address },
+      { name: address, exact: true },
     );
   }
 
-  ownerCityCell(city: string, firstName: string, lastName: string): Locator {
+  cityCellForOwner(firstName: string, lastName: string, city: string): Locator {
     return this.ownerRowByFirstNameAndLastName(firstName, lastName).getByRole(
       "cell",
-      { name: city },
+      { name: city, exact: true },
     );
   }
 
-  ownerTelephoneCell(
+  telephoneCellForOwner(
+    firstName: string,
+    lastName: string,
     telephone: string,
-    firstName: string,
-    lastName: string,
   ): Locator {
     return this.ownerRowByFirstNameAndLastName(firstName, lastName).getByRole(
       "cell",
-      { name: telephone },
+      { name: telephone, exact: true },
     );
   }
 }

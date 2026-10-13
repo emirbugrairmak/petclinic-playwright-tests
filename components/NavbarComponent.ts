@@ -1,37 +1,35 @@
 import { Locator, Page } from '@playwright/test';
 
 export class NavbarComponent {
-  private readonly page: Page;
-  private readonly navBar: Locator
-  readonly homeButton: Locator
+  private readonly navigation: Locator
+  readonly homeLink: Locator
   readonly ownersButton: Locator
   readonly veterinariansButton: Locator
-  readonly petTypesButton: Locator
-  readonly specialtiesButton: Locator
-  private readonly ownerSearchButton: Locator
-  private readonly addNewOwnerButton: Locator
+  readonly petTypesLink: Locator
+  readonly specialtiesLink: Locator
+  private readonly ownerSearchLink: Locator
+  private readonly addNewOwnerLink: Locator
 
   constructor(page: Page) {
-    this.page = page;
-    this.navBar = page.getByRole("navigation")
-    this.homeButton = this.navBar.getByRole("link", { name: "Home", exact: true })
-    this.ownersButton = this.navBar.getByRole("button", { name: "Owners", exact: true })
-    this.veterinariansButton = this.navBar.getByRole("button", { name: "Veterinarians", exact: true })
-    this.petTypesButton = this.navBar.getByRole("link", { name: "Pet Types", exact: true })
-    this.specialtiesButton = this.navBar.getByRole("link", { name: "Specialties", exact: true })
-    this.ownerSearchButton = this.navBar.getByRole("link", {name: "Search",exact: true,})   
-    this.addNewOwnerButton = this.navBar.getByRole("link", {name: "Add New",exact: true,})
+    this.navigation = page.getByRole("navigation")
+    this.homeLink = this.navigation.getByRole("link", { name: "Home", exact: true })
+    this.ownersButton = this.navigation.getByRole("button", { name: "Owners", exact: true })
+    this.veterinariansButton = this.navigation.getByRole("button", { name: "Veterinarians", exact: true })
+    this.petTypesLink = this.navigation.getByRole("link", { name: "Pet Types", exact: true })
+    this.specialtiesLink = this.navigation.getByRole("link", { name: "Specialties", exact: true })
+    this.ownerSearchLink = this.navigation.getByRole("link", {name: "Search",exact: true,})
+    this.addNewOwnerLink = this.navigation.getByRole("link", {name: "Add New",exact: true,})
   }
 
 
   async clickOwnerSearchButton(){
     await this.ownersButton.click()
-    await this.ownerSearchButton.click()
+    await this.ownerSearchLink.click()
   }
 
   async clickAddNewButton(){
     await this.ownersButton.click()
-    await this.addNewOwnerButton.click()
+    await this.addNewOwnerLink.click()
   }
 
   

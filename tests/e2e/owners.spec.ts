@@ -1,46 +1,63 @@
 import { createOwnerData, existingOwners } from "../../test-data/owner-data";
 import { test, expect } from "../../fixtures/test-fixtures";
 
-test.describe("Owners tests", { tag: ["@e2e"] }, () => {
+test.describe("Home and owner UI", { tag: ["@e2e"] }, () => {
   test(
-    "Home page opens correctly",
+    "displays the welcome heading and navigation",
     { tag: ["@smoke", "@home"] },
     async ({ pm, page }) => {
       await pm.homePage.goto();
       await expect(page).toHaveURL("/petclinic/");
 
-      await expect(pm.homePage.welcomeMessage).toBeVisible();
+      await expect(pm.homePage.welcomeHeading).toBeVisible();
 
-      await expect(pm.navBar.homeButton).toBeVisible();
+      await expect(pm.navBar.homeLink).toBeVisible();
       await expect(pm.navBar.ownersButton).toBeVisible();
       await expect(pm.navBar.veterinariansButton).toBeVisible();
-      await expect(pm.navBar.petTypesButton).toBeVisible();
-      await expect(pm.navBar.specialtiesButton).toBeVisible();
+      await expect(pm.navBar.petTypesLink).toBeVisible();
+      await expect(pm.navBar.specialtiesLink).toBeVisible();
     },
   );
 
   test(
-    "Searches for an existing owner by last name",
+    "filters owners by last name",
     { tag: ["@smoke", "@owner"] },
     async ({ pm }) => {
       await pm.homePage.goto();
 
       await pm.navBar.clickOwnerSearchButton();
 
-      await expect(pm.ownersPage.ownersText).toBeVisible();
+      await expect(pm.ownersPage.ownersHeading).toBeVisible();
 
       const owner = existingOwners.georgeFranklin;
+      const bettyDavis = { firstName: "Betty", lastName: "Davis" };
+
+      await pm.ownersPage.searchOwner(bettyDavis.lastName);
+      await expect(
+        pm.ownersPage.ownerRowByFirstNameAndLastName(
+          bettyDavis.firstName,
+          bettyDavis.lastName,
+        ),
+      ).toBeVisible();
 
       await pm.ownersPage.searchOwner(owner.lastName);
 
       await expect(
-        pm.ownersPage.ownerRowByLastName(owner.lastName),
+        pm.ownersPage.ownerRowByFirstNameAndLastName(owner.firstName, owner.lastName),
       ).toBeVisible();
+
+      await expect(
+        pm.ownersPage.ownerRowByFirstNameAndLastName(
+          bettyDavis.firstName,
+          bettyDavis.lastName,
+        ),
+      ).toHaveCount(0);
+
     },
   );
 
   test(
-    "Creates a new owner successfully",
+    "creates an owner and displays it in the list",
     { tag: ["@smoke", "@owner"] },
     async ({ pm, page, ownerApi }) => {
       await pm.ownersPage.goto();
@@ -61,8 +78,11 @@ test.describe("Owners tests", { tag: ["@e2e"] }, () => {
 
         const response = await responsePromise;
         const responseBody = await response.json();
-        ownerId = responseBody.id;
-        expect(ownerId).toEqual(expect.any(Number))
+        const createdOwnerId: unknown = responseBody.id;
+        if (typeof createdOwnerId !== "number") {
+          throw new Error("Created owner ID is not a number");
+        }
+        ownerId = createdOwnerId;
         expect(response.status()).toBe(201)
 
         const ownerRow = pm.ownersPage.ownerRowByFirstNameAndLastName(
@@ -86,8 +106,8 @@ test.describe("Owners tests", { tag: ["@e2e"] }, () => {
   );
 
   test(
-    "Displays API-created owner correctly in UI",
-    { tag: ["@api", "@owner"] },
+    "displays an API-created owner's details",
+    { tag: ["@owner"] },
     async ({ pm, owner }) => {
       await pm.ownersPage.goto();
 
@@ -95,14 +115,14 @@ test.describe("Owners tests", { tag: ["@e2e"] }, () => {
 
       await pm.ownersPage.openOwner(owner.firstName, owner.lastName);
 
-      await expect(pm.ownerDetailsPage.nameCell).toHaveText(
+      await expect(pm.ownerDetailsPage.ownerNameCell).toHaveText(
         `${owner.firstName} ${owner.lastName}`,
       );
-      await expect(pm.ownerDetailsPage.addressCell).toHaveText(owner.address);
-      await expect(pm.ownerDetailsPage.telephoneCell).toHaveText(
+      await expect(pm.ownerDetailsPage.ownerAddressCell).toHaveText(owner.address);
+      await expect(pm.ownerDetailsPage.ownerCityCell).toHaveText(owner.city);
+      await expect(pm.ownerDetailsPage.ownerTelephoneCell).toHaveText(
         owner.telephone,
       );
-      await expect(pm.ownerDetailsPage.cityCell).toHaveText(owner.city);
     },
   );
 });

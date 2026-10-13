@@ -1,15 +1,12 @@
 import { Locator, Page } from '@playwright/test';
-import { NavbarComponent } from '../components/NavbarComponent';
 
 export class HomePage {
   private readonly page: Page;
-  readonly welcomeMessage: Locator
-  readonly navBar: NavbarComponent
+  readonly welcomeHeading: Locator
 
   constructor(page: Page) {
     this.page = page;
-    this.welcomeMessage = page.getByRole("heading", {name: "Welcome to Petclinic",});
-    this.navBar = new NavbarComponent(page)
+    this.welcomeHeading = page.getByRole("heading", {name: "Welcome to Petclinic",});
   }
 
   async goto(){
