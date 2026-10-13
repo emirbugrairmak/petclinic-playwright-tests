@@ -4,5 +4,14 @@
     "strict": true,
     "noUnusedLocals": true,
     "noUnusedParameters": true
-  }
+  },
+  "include": [
+    "playwright.config.ts",
+    "api/**/*.ts",
+    "components/**/*.ts",
+    "fixtures/**/*.ts",
+    "pages/**/*.ts",
+    "test-data/**/*.ts",
+    "tests/**/*.ts"
+  ]
 }
