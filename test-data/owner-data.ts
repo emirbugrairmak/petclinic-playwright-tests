@@ -1,3 +1,5 @@
+import { faker } from "@faker-js/faker";
+
 export type OwnerData = {
   firstName: string;
   lastName: string;
@@ -19,10 +21,10 @@ export function createOwnerData(): OwnerData {
   const uniqueId = createAlphabeticId();
 
   return {
-    firstName: "Test First Name",
-    lastName: `Owner ${uniqueId}`,
-    address: "Test Address",
-    city: "Test City",
+    firstName: faker.person.firstName(),
+    lastName: `${faker.person.lastName()} ${uniqueId}`,
+    address: faker.location.streetAddress(),
+    city: faker.location.city(),
     telephone: "5551234567",
   };
 }

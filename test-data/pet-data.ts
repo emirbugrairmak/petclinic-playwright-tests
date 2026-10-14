@@ -1,4 +1,5 @@
 import { randomUUID } from "node:crypto";
+import { faker } from "@faker-js/faker";
 
 export type PetData = {
     name: string,
@@ -10,7 +11,7 @@ export type PetData = {
 export function createPetData(): PetData{
     const uniqueId = randomUUID().slice(0, 8);
     return {
-        name: `Buddy ${uniqueId}`,
+        name: `${faker.person.firstName()} ${uniqueId}`,
         birthDate: "2020-09-16",
         type: "hamster"
     }
