@@ -1,87 +1,88 @@
 # Petclinic Playwright Tests
 
-Playwright and TypeScript test framework for the [Spring Petclinic Angular frontend](https://github.com/bondar-artem/petclinic-angular) and its REST backend. It covers browser workflows, owner API CRUD, network behavior, mobile emulation, and visual regression. The application itself is not included in this repository.
+A Playwright and TypeScript test framework for the [Spring Petclinic Angular frontend](https://github.com/bondar-artem/petclinic-angular) and its REST backend. It combines browser and API checks with focused network, mobile, and visual coverage. The application is started separately and is not included in this repository.
 
-**Stack:** Playwright Test, TypeScript, Node.js, Docker, GitHub Actions.
+## Tech Stack
 
-## Coverage and design
+Playwright Test · TypeScript · Node.js · Faker · Docker · GitHub Actions
 
-| Area | What is tested |
+## What This Project Covers
+
+| Area | Coverage |
 | --- | --- |
-| UI and API | Owner and pet workflows, owner CRUD, and API-created data used in UI tests |
-| Network | Mocked owners, modified real responses, and `waitForResponse` assertions |
-| Browser and mobile | Chromium, Firefox, WebKit, and a Pixel 7 Chromium project |
-| Visual | Owner form screenshot compared with a Chromium baseline |
+| UI and hybrid flows | Owner search, creation, and details; pet creation and editing; visit creation. Owner and pet preconditions are created through the API where the UI action under test does not require their creation. |
+| API | Owner create, read, update, and delete operations. |
+| Network | Mocked owner responses, modification of a real API response, and `waitForResponse` checks for UI-triggered requests. |
+| Browsers and mobile | Chromium, Firefox, WebKit, and a Pixel 7 mobile emulation project. |
+| Visual | Screenshot comparison of the owner form in Chromium. |
 
-Page objects and a shared `PageManager` keep UI interactions out of test cases. A navbar component models shared navigation; an API helper wraps owner requests. Custom fixtures provide these objects and create owner preconditions with teardown cleanup. Generated owner and pet data reduces collisions when tests run in parallel.
+## Framework Structure
 
 ```text
-api/          Owner API helper
-components/   Shared navbar component
-fixtures/     PageManager, API helper, and owner-data fixtures
-pages/        Page objects and PageManager
-test-data/    Generated and mocked test data
-tests/        api/, e2e/, mobile/, network/, visual/
+api/          Owner REST helper
+components/   Shared navigation component
+fixtures/     PageManager and API-backed owner/pet lifecycle
+pages/        Focused page objects and PageManager
+test-data/    Generated data, known backend fixtures, and mock responses
+tests/        API, E2E, network, mobile, and visual specs
 ```
 
-Tests use tags such as `@smoke`, `@e2e`, `@api`, `@network`, and `@visual` for targeted runs. Playwright runs tests in parallel locally; CI uses one worker, two retries, and rejects accidental `test.only` calls.
+## Key Framework Features
 
-## Run locally
+- Page objects handle screen-specific actions; a shared navbar component and `PageManager` keep navigation and page access consistent.
+- Custom fixtures create owner and pet preconditions through the API. Teardown deletes pets before owners; the visit scenario deletes its visit first.
+- Data factories keep Faker out of test cases and combine generated names with unique suffixes. Known seeded owners remain separate from generated data.
+- UI create/update flows verify backend responses as well as rendered state. Network tests also exercise isolated mocks and modified real responses.
 
-Requires Node.js, npm, Git, and Docker. The frontend must be cloned separately. From the root of this repository:
+## Running Locally
+
+Use Node.js 24 (the CI version), npm, Git, and Docker. The commands below start the frontend and backend at the versions pinned in [GitHub Actions](.github/workflows/playwright.yml). Run them from the repository root:
 
 ```bash
 npm ci
 npx playwright install
+cp .env.example .env
+
 FRONTEND_COMMIT=6e70caf78572f4a9dc74c8ba2cb119f237e14980
 BACKEND_IMAGE=springcommunity/spring-petclinic-rest@sha256:d092779e874fd680357763a6f219d97afb419dca13f6a750ccfb8ac63c610986
 FRONTEND_NODE_IMAGE=node:18@sha256:c6ae79e38498325db67193d391e6ec1d224d96c693a8a4d943498556716d3783
+
 git clone --depth 1 https://github.com/bondar-artem/petclinic-angular.git ../petclinic-angular
 git -C ../petclinic-angular fetch --depth 1 origin "$FRONTEND_COMMIT"
 git -C ../petclinic-angular checkout --detach FETCH_HEAD
+
 docker run -d --name petclinic-backend -p 9966:9966 "$BACKEND_IMAGE"
 docker run --rm -v "$PWD/../petclinic-angular:/app" -w /app "$FRONTEND_NODE_IMAGE" npm ci
 docker run -d --name petclinic-frontend -p 4200:4200 -v "$PWD/../petclinic-angular:/app" -w /app -e NG_CLI_ANALYTICS=false "$FRONTEND_NODE_IMAGE" npm start -- --host 0.0.0.0 --port 4200 --live-reload=false
-cp .env.example .env
 ```
 
-If the frontend is already cloned next to this repository, skip the `git clone` command. Set these values in `.env`, then wait for `http://localhost:4200/` and `http://localhost:9966/petclinic/api/owners` to respond:
+Set the copied `.env` file to:
 
 ```dotenv
 BASE_URL=http://localhost:4200
 API_URL=http://localhost:9966/petclinic/api
 ```
 
+Once both services respond, run `npm run typecheck` and `npm test`. On Linux, install browser system dependencies with `npx playwright install --with-deps` if needed. Stop the local containers with `docker rm -f petclinic-frontend petclinic-backend`.
+
+## Useful Commands
+
 | Command | Purpose |
 | --- | --- |
-| `npm test` | All configured projects and tests |
-| `npm run typecheck` | Check TypeScript types without emitting files |
-| `npm run test:smoke` | Smoke tests |
-| `npm run test:e2e` | Tagged UI workflows |
-| `npm run test:api` | API-tagged tests |
-| `npm run test:network` | Network tests |
-| `npm run test:chromium` | Chromium project |
-| `npm run test:mobile` | Mobile Chromium project |
-| `npm run test:visual` | Chromium visual comparison |
-| `npm run test:visual:update` | Update the current platform's Chromium baseline |
-| `npm run test:ui` | Playwright UI mode |
-| `npm run test:report` | Open the HTML report |
+| `npm run typecheck` | Check TypeScript without generating JavaScript. |
+| `npm test` | Run all configured projects. |
+| `npm run test:smoke` | Run scenarios tagged `@smoke`. |
+| `npm run test:e2e` | Run tagged UI workflows. |
+| `npm run test:api` | Run the API project. |
+| `npm run test:network` | Run network tests. |
+| `npm run test:mobile` | Run Pixel 7 emulation tests. |
+| `npm run test:visual` | Run the Chromium visual test. |
+| `npm run test:report` | Open the HTML report. |
 
-The HTML report is written to `playwright-report/`. Failed tests retain traces and videos and capture screenshots in `test-results/`. Remove the local application containers with `docker rm -f petclinic-frontend petclinic-backend` when finished.
+Tags such as `@owner`, `@pet`, and `@visit` also have targeted npm scripts.
 
-## Visual testing and CI
+## CI and Reporting
 
-Screenshot rendering depends on the operating system. The committed `formscreenshot-chromium-linux.png` baseline was generated with `mcr.microsoft.com/playwright:v1.63.0-noble` on Linux/amd64; the visual CI job uses that same image and runs `@visual` only on Chromium. Review screenshot changes before updating a baseline. Running `test:visual:update` directly on macOS updates a macOS baseline, not the Linux CI baseline.
+[GitHub Actions](.github/workflows/playwright.yml) runs on pushes and pull requests to `main`. The functional job installs dependencies, typechecks, starts the backend and frontend with Docker, and runs non-visual tests across the configured desktop, mobile, and API projects. CI uses one worker, two retries, and rejects `test.only`.
 
-[GitHub Actions](.github/workflows/playwright.yml) runs on pushes and pull requests targeting `main`:
-
-- **Functional job:** starts the backend and frontend, then runs non-visual tests across Chromium, Firefox, WebKit, and mobile Chromium.
-- **Visual job:** starts the application independently and compares the Chromium screenshot in the pinned Playwright Linux container.
-
-Both jobs upload their HTML reports and `test-results/` as separate artifacts, including failure traces and visual `expected`, `actual`, and `diff` images when produced.
-
-CI runs `npm run typecheck` before tests. The frontend commit, backend image, frontend Node image, Playwright image, runner OS, Node version, and action revisions are pinned in the workflow. Direct npm dependencies use exact versions in `package.json`; `package-lock.json` locks the full dependency tree. To update the application versions, use `git ls-remote https://github.com/bondar-artem/petclinic-angular.git HEAD` for the frontend commit and `docker buildx imagetools inspect IMAGE:TAG` for an image digest. Update the workflow values and the local commands above; also update the frontend Node image in `playwright.config.ts`. Verify the new application versions with `npm run typecheck` and `npm test` before committing. The screenshot baseline may need review if the frontend or Playwright image changes.
-
-## Status
-
-Actively developed; framework review and final refinements are ongoing.
+The separate visual job starts the application with Docker, then typechecks and runs the Chromium visual test in a pinned Linux Playwright image. The repository includes a Linux Chromium screenshot baseline for that environment. Both jobs upload HTML reports and `test-results/` artifacts; failures retain traces and videos, capture screenshots, and include visual comparison images when applicable.
