@@ -1,5 +1,6 @@
 import { Locator, Page } from "@playwright/test";
 import type { VisitData } from "../test-data/visit-data";
+import { PetData } from "../test-data/pet-data";
 
 export class OwnerDetailsPage {
   private readonly page: Page;
@@ -56,6 +57,18 @@ export class OwnerDetailsPage {
       .filter({ has: this.page.getByText(petName, { exact: true }) });
   }
 
+  petNameValue(petName: string): Locator {
+    return this.petDetailsByName(petName).locator('dt:text-is("Name") + dd');
+  }
+
+  petBirthDateValue(petName: string): Locator {
+    return this.petDetailsByName(petName).locator('dt:text-is("Birth Date") + dd');
+  }
+
+  petTypeValue(petName: string): Locator {
+    return this.petDetailsByName(petName).locator('dt:text-is("Type") + dd');
+  }
+
   async openAddVisitPage(petName: string): Promise<void> {
     await this.petDetailsByName(petName)
       .getByRole("button", { name: "Add Visit", exact: true })
@@ -81,4 +94,11 @@ export class OwnerDetailsPage {
         }),
       });
   }
+
+  async openEditPetPage(pet: PetData){
+    await this.petDetailsByName(pet.name).getByRole("button", {name: "Edit Pet"}).click()
+  }
+
+
+
 }

@@ -1,5 +1,5 @@
 import { existingOwners } from "../../test-data/owner-data";
-import { createPetData } from "../../test-data/pet-data";
+import { createPetData, createUpdatedPetData } from "../../test-data/pet-data";
 import { test, expect } from "../../fixtures/test-fixtures";
 import { createVisitData } from "../../test-data/visit-data";
 
@@ -122,6 +122,37 @@ test.describe("Owner and pet UI", { tag: ["@e2e", "@smoke"] }, () => {
         expect(getVisitResponse.status()).toBe(404);
       }
     }
+
+  });
+  
+  test('should edit an existing pet and display the updated details on the owner page', async ({ owner, pet, pm, page }) => {
+    await pm.ownersPage.goto()
+    await pm.ownersPage.openOwner(owner.firstName, owner.lastName)
+
+    await pm.ownerDetailsPage.openEditPetPage(pet)
+    await expect(pm.editPetPage.ownerInput).toHaveValue(`${owner.firstName} ${owner.lastName}`)
+    await expect(pm.editPetPage.petNameInput).toHaveValue(pet.name)
+    await expect(pm.editPetPage.birthDateInput).toHaveValue(pet.birthDate.replace(/-/g, "/"))
+    await expect(pm.editPetPage.currentPetTypeInput).toHaveValue(pet.type.name)
+
+    const updatedPet = createUpdatedPetData(pet)
+
+    const responsePromise = page.waitForResponse(
+      response =>
+        response.url().includes(`/api/pets/${pet.id}`) &&
+        response.request().method() === 'PUT'
+    );
+    
+    await pm.editPetPage.updatePet(updatedPet)
+    
+    const response = await responsePromise;
+    
+    expect(response.status()).toBe(204)
+
+    await expect(pm.ownerDetailsPage.petNameValue(updatedPet.name)).toBeVisible()
+    await expect(pm.ownerDetailsPage.petBirthDateValue(updatedPet.name)).toHaveText(updatedPet.birthDate)
+    await expect(pm.ownerDetailsPage.petTypeValue(updatedPet.name)).toHaveText(updatedPet.type.name)
+  
 
   });
   
