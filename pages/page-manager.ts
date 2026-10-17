@@ -2,6 +2,7 @@ import { Page } from "@playwright/test";
 import { NavbarComponent } from "../components/NavbarComponent";
 import { AddOwnerPage } from "./add-owner-page";
 import { AddPetPage } from "./add-pet-page";
+import { AddVisitPage } from "./add-visit-page";
 import { HomePage } from "./home-page";
 import { OwnerDetailsPage } from "./owner-details-page";
 import { OwnersPage } from "./owners-page";
@@ -13,6 +14,7 @@ export class PageManager {
   readonly addOwnerPage: AddOwnerPage;
   readonly ownerDetailsPage: OwnerDetailsPage;
   readonly addPetPage: AddPetPage;
+  readonly addVisitPage: AddVisitPage;
 
   constructor(page: Page) {
     this.navBar = new NavbarComponent(page);
@@ -21,5 +23,6 @@ export class PageManager {
     this.addOwnerPage = new AddOwnerPage(page);
     this.ownerDetailsPage = new OwnerDetailsPage(page);
     this.addPetPage = new AddPetPage(page);
+    this.addVisitPage = new AddVisitPage(page);
   }
 }

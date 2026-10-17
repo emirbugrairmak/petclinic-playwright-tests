@@ -21,7 +21,7 @@ export class AddPetPage {
   async addPet(pet: PetData){
     await this.petNameInput.fill(pet.name)
     await this.birthDateInput.fill(pet.birthDate)
-    await this.petTypeSelect.selectOption({ label: pet.type })
+    await this.petTypeSelect.selectOption({ label: pet.type.name })
     await this.savePetButton.click()
   }
 

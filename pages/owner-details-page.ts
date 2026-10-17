@@ -1,4 +1,5 @@
 import { Locator, Page } from "@playwright/test";
+import type { VisitData } from "../test-data/visit-data";
 
 export class OwnerDetailsPage {
   private readonly page: Page;
@@ -53,5 +54,31 @@ export class OwnerDetailsPage {
     return this.petsAndVisitsTable
       .locator("app-pet-list")
       .filter({ has: this.page.getByText(petName, { exact: true }) });
+  }
+
+  async openAddVisitPage(petName: string): Promise<void> {
+    await this.petDetailsByName(petName)
+      .getByRole("button", { name: "Add Visit", exact: true })
+      .click();
+  }
+
+  visitRowForPet(petName: string, visit: VisitData): Locator {
+    const displayedDate = visit.date.replace(/\//g, "-");
+
+    return this.petDetailsByName(petName)
+      .locator("app-visit-list")
+      .getByRole("row")
+      .filter({
+        has: this.page.getByRole("cell", {
+          name: displayedDate,
+          exact: true,
+        }),
+      })
+      .filter({
+        has: this.page.getByRole("cell", {
+          name: visit.description,
+          exact: true,
+        }),
+      });
   }
 }

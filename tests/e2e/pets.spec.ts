@@ -1,6 +1,7 @@
 import { existingOwners } from "../../test-data/owner-data";
 import { createPetData } from "../../test-data/pet-data";
 import { test, expect } from "../../fixtures/test-fixtures";
+import { createVisitData } from "../../test-data/visit-data";
 
 test.describe("Owner and pet UI", { tag: ["@e2e", "@smoke"] }, () => {
   test(
@@ -60,7 +61,7 @@ test.describe("Owner and pet UI", { tag: ["@e2e", "@smoke"] }, () => {
 
         await expect(createdPet).toBeVisible();
         await expect(createdPet).toContainText(pet.birthDate);
-        await expect(createdPet).toContainText(pet.type);
+        await expect(createdPet).toContainText(pet.type.name);
       } finally {
         if (petId !== undefined) {
           const petDeleteResponse = await request.delete(
@@ -75,4 +76,55 @@ test.describe("Owner and pet UI", { tag: ["@e2e", "@smoke"] }, () => {
       }
     },
   );
+
+  test('adds a visit to an existing pet and displays it on the owner details page', {tag: ["@pet","@owner","@visit"]}, async ({ owner, pet, pm, page, request }) => {
+    await pm.ownersPage.goto()
+
+    await pm.ownersPage.openOwner(owner.firstName, owner.lastName)
+
+    await pm.ownerDetailsPage.openAddVisitPage(pet.name)
+
+    const visit = createVisitData()
+    let visitId: number | undefined;
+
+    try {
+      const responsePromise = page.waitForResponse(
+        response =>
+          response.url().includes(`/api/owners/${owner.id}/pets/${pet.id}/visits`) &&
+          response.request().method() === 'POST'
+      );
+
+      await pm.addVisitPage.addVisit(visit)
+
+      const response = await responsePromise;
+      const responseBody = await response.json();
+      const createdVisitId: unknown = responseBody.id;
+      if (typeof createdVisitId !== "number") {
+        throw new Error("Created visit ID is not a number");
+      }
+      visitId = createdVisitId;
+
+      expect(response.status()).toBe(201)
+      expect(responseBody.date).toBe(visit.date.replace(/\//g, "-"));
+      expect(responseBody.description).toBe(visit.description)
+      expect(responseBody.petId).toBe(pet.id)
+
+      await expect(pm.ownerDetailsPage.visitRowForPet(pet.name, visit)).toBeVisible()
+    } finally {
+      if (visitId !== undefined) {
+        const deleteVisitResponse = await request.delete(
+          `${process.env.API_URL}/visits/${visitId}`,
+        );
+        expect.soft(deleteVisitResponse.status()).toBe(204);
+        const getVisitResponse = await request.get(
+          `${process.env.API_URL}/visits/${visitId}`,
+        );
+        expect(getVisitResponse.status()).toBe(404);
+      }
+    }
+
+  });
+  
+
+
 });

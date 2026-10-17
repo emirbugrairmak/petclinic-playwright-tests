@@ -17,5 +17,8 @@ node_modules/
 /playwright/.cache/
 /playwright/.auth/
 
+# Locally generated Archify diagrams and validation receipts
+/.archify/
+
 # Frontend cloned by the CI workflow
 /frontend/

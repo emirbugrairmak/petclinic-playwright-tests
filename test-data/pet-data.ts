@@ -4,7 +4,7 @@ import { faker } from "@faker-js/faker";
 export type PetData = {
     name: string,
     birthDate: string,
-    type: string
+    type: { id: number; name: string }
 }
 
 
@@ -13,6 +13,6 @@ export function createPetData(): PetData{
     return {
         name: `${faker.person.firstName()} ${uniqueId}`,
         birthDate: "2020-09-16",
-        type: "hamster"
+        type: { id: 6, name: "hamster" }
     }
 }
