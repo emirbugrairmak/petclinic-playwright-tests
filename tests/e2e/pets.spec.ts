@@ -3,10 +3,10 @@ import { createPetData, createUpdatedPetData } from "../../test-data/pet-data";
 import { test, expect } from "../../fixtures/test-fixtures";
 import { createVisitData } from "../../test-data/visit-data";
 
-test.describe("Owner and pet UI", { tag: ["@e2e", "@smoke"] }, () => {
+test.describe("Owner and pet UI", { tag: ["@e2e"] }, () => {
   test(
     "opens owner details from search results",
-    { tag: ["@owner"] },
+    { tag: ["@owner", "@smoke"] },
     async ({ pm }) => {
       await pm.homePage.goto();
 
@@ -27,7 +27,7 @@ test.describe("Owner and pet UI", { tag: ["@e2e", "@smoke"] }, () => {
 
   test(
     "adds a pet to a new owner and displays it",
-    { tag: ["@pet"] },
+    { tag: ["@pet", "@smoke"] },
     async ({ pm, owner, page, request }) => {
       await pm.ownersPage.goto();
 
@@ -125,7 +125,7 @@ test.describe("Owner and pet UI", { tag: ["@e2e", "@smoke"] }, () => {
 
   });
   
-  test('should edit an existing pet and display the updated details on the owner page', async ({ owner, pet, pm, page }) => {
+  test('should edit an existing pet and display the updated details on the owner page', {tag: ["@pet", "@owner"]}, async ({ owner, pet, pm, page }) => {
     await pm.ownersPage.goto()
     await pm.ownersPage.openOwner(owner.firstName, owner.lastName)
 

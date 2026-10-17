@@ -1,9 +1,6 @@
 import { defineConfig, devices } from '@playwright/test';
 
 import 'dotenv/config';
-// import dotenv from 'dotenv';
-// import path from 'path';
-// dotenv.config({ path: path.resolve(__dirname, '.env') });
 
 const frontendNodeImage = process.env.FRONTEND_NODE_IMAGE ?? 'node:18@sha256:c6ae79e38498325db67193d391e6ec1d224d96c693a8a4d943498556716d3783';
 

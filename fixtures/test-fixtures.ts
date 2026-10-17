@@ -26,6 +26,7 @@ export const test = base.extend<FixtureTypes>({
     const owner = createOwnerData();
 
     const createOwnerResponse = await ownerApi.createOwner(owner);
+    expect(createOwnerResponse.status()).toBe(201);
     const createOwnerBody = await createOwnerResponse.json();
     const ownerId: unknown = createOwnerBody.id;
 
@@ -34,8 +35,6 @@ export const test = base.extend<FixtureTypes>({
     }
 
     try {
-      expect(createOwnerResponse.status()).toBe(201);
-
       await use({...owner,id: ownerId,});
     } finally {
       const deleteOwnerResponse = await ownerApi.deleteOwner(ownerId);
@@ -52,6 +51,9 @@ export const test = base.extend<FixtureTypes>({
       `${process.env.API_URL}/owners/${owner.id}/pets`,
       { data: pet },
     );
+
+    expect(createPetResponse.status()).toBe(201);
+
     const createPetBody = await createPetResponse.json();
     const petId: unknown = createPetBody.id;
 
@@ -60,8 +62,6 @@ export const test = base.extend<FixtureTypes>({
     }
 
     try {
-      expect(createPetResponse.status()).toBe(201);
-
       await use({ ...pet, id: petId });
     } finally {
       const deletePetResponse = await request.delete(

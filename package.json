@@ -1,8 +1,8 @@
 {
   "name": "petclinic-playwright-tests",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Playwright and TypeScript tests for Spring Petclinic Angular and its REST API",
+  "private": true,
   "scripts": {
     "test": "playwright test",
     "typecheck": "tsc --noEmit",
@@ -26,8 +26,6 @@
     "test:visit": "playwright test --grep @visit"
 
   },
-  "keywords": [],
-  "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
